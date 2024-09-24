@@ -4,8 +4,14 @@
   "package": "com.jowhjy.hidecoords.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ChunkDataS2CPacketAccessor",
+    "ChunkDeltaUpdateS2CPacketAccessor",
+    "ClientConnectionMixin",
+    "LightUpdateS2CPacketAccessor",
     "ServerCommonNetworkHandlerMixin",
-    "ServerPlayNetworkHandlerMixin"
+    "ServerPlayNetworkHandlerMixin",
+    "VehicleMoveC2SPacketAccessor",
+    "VehicleMoveS2CPacketAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

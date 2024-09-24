@@ -1,6 +1,7 @@
 package com.jowhjy.hidecoords.command;
 
-import com.jowhjy.hidecoords.util.CoordOffset;
+import com.jowhjy.hidecoords.Offset;
+import com.jowhjy.hidecoords.util.HasCoordOffset;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
@@ -18,7 +19,7 @@ public class CoordoffsetCommand {
     }
 
     private static int executeGet(ServerCommandSource source) {
-        BlockPos result = ((CoordOffset)source.getPlayer().networkHandler).juhc$getCoordOffset();
+        Offset result = ((HasCoordOffset)source.getPlayer().networkHandler).juhc$getCoordOffset();
         source.sendFeedback(() -> Text.literal(result.toString()), false);
         return 1;
     }
