@@ -4,14 +4,15 @@
   "package": "com.jowhjy.hidecoords.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ChunkDataS2CPacketAccessor",
+    "ChunkDataS2CPacketMixin",
     "ChunkDeltaUpdateS2CPacketAccessor",
+    "ChunkDeltaUpdateS2CPacketMixin",
     "ClientConnectionMixin",
     "LightUpdateS2CPacketAccessor",
-    "ServerCommonNetworkHandlerMixin",
-    "ServerPlayNetworkHandlerMixin",
-    "VehicleMoveC2SPacketAccessor",
-    "VehicleMoveS2CPacketAccessor"
+    "LightUpdateS2CPacketMixin",
+    "PlayerManagerMixin",
+    "ServerPlayerEntityMixin",
+    "ServerPlayNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

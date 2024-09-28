@@ -20,7 +20,7 @@ public class CoordoffsetCommand {
 
     private static int executeGet(ServerCommandSource source) {
         Offset result = ((HasCoordOffset)source.getPlayer().networkHandler).juhc$getCoordOffset();
-        source.sendFeedback(() -> Text.literal(result.toString()), false);
+        source.sendFeedback(() -> Text.literal(result.getBlockPos().toString()), false);
         return 1;
     }
 }

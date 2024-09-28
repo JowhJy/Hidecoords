@@ -1,12 +1,22 @@
 package com.jowhjy.hidecoords.util;
 
 import com.jowhjy.hidecoords.Offset;
-import com.jowhjy.hidecoords.mixin.ChunkDataS2CPacketAccessor;
+import com.jowhjy.hidecoords.WorldBorderObfuscator;
 import com.jowhjy.hidecoords.mixin.ChunkDeltaUpdateS2CPacketAccessor;
 import com.jowhjy.hidecoords.mixin.LightUpdateS2CPacketAccessor;
-import com.jowhjy.hidecoords.mixin.VehicleMoveS2CPacketAccessor;
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ExperienceOrbEntity;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedDataHandler;
+import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.Packet;
@@ -15,19 +25,16 @@ import net.minecraft.network.packet.PlayPackets;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import javax.xml.crypto.Data;
+import java.util.*;
 
 public class S2CPacketOffsetter {
+
+
 
     public static <T extends PacketListener> Packet<?> offsetPacket(Packet<T> packet, Offset offset, World world) {
 
@@ -98,8 +105,13 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.LEVEL_CHUNK_WITH_LIGHT)) {
             ChunkDataS2CPacket typedPacket = (ChunkDataS2CPacket) packet;
-            ((ChunkDataS2CPacketAccessor) typedPacket).setChunkX(offset.getChunkX() + typedPacket.getChunkX());
-            ((ChunkDataS2CPacketAccessor) typedPacket).setChunkZ(offset.getChunkZ() + typedPacket.getChunkZ());
+
+            ChunkPos chunkPos = new ChunkPos(typedPacket.getChunkX(), typedPacket.getChunkZ());
+            ChunkPos newChunkPos = offset(chunkPos, offset);
+
+            ((HasAccessiblePos)typedPacket).juhc$setChunkX(newChunkPos.x);
+            ((HasAccessiblePos)typedPacket).juhc$setChunkZ(newChunkPos.z);
+
             return typedPacket;
         }
         if (packetType.equals(PlayPackets.OPEN_SIGN_EDITOR)) {
@@ -110,7 +122,8 @@ public class S2CPacketOffsetter {
             ChunkDeltaUpdateS2CPacket typedPacket = (ChunkDeltaUpdateS2CPacket) packet;
             ChunkSectionPos oldSectionPos = ((ChunkDeltaUpdateS2CPacketAccessor)typedPacket).getSectionPos();
             ChunkSectionPos newSectionPos = ChunkSectionPos.from(offset(oldSectionPos.toChunkPos(), offset), oldSectionPos.getSectionY());
-            ((ChunkDeltaUpdateS2CPacketAccessor)typedPacket).setSectionPos(newSectionPos);
+            ((HasAccessiblePos)typedPacket).juhc$setChunkX(newSectionPos.getX());
+            ((HasAccessiblePos)typedPacket).juhc$setChunkZ(newSectionPos.getZ());
             return typedPacket;
         }
         if (packetType.equals(PlayPackets.LEVEL_PARTICLES)) {
@@ -120,7 +133,7 @@ public class S2CPacketOffsetter {
         if (packetType.equals(PlayPackets.SOUND)) {
             PlaySoundS2CPacket typedPacket = (PlaySoundS2CPacket) packet;
 
-            return new PlaySoundS2CPacket(typedPacket.getSound(),typedPacket.getCategory(), offsetX8(typedPacket.getX(),offset),typedPacket.getY(),offsetZ8(typedPacket.getZ(),offset), typedPacket.getVolume(),typedPacket.getPitch(),typedPacket.getSeed());
+            return new PlaySoundS2CPacket(typedPacket.getSound(),typedPacket.getCategory(), offsetX(typedPacket.getX(),offset),typedPacket.getY(),offsetZ(typedPacket.getZ(),offset), typedPacket.getVolume(),typedPacket.getPitch(),typedPacket.getSeed());
         }
         if (packetType.equals(PlayPackets.SOUND_ENTITY)) {
             PlaySoundFromEntityS2CPacket typedPacket = (PlaySoundFromEntityS2CPacket) packet;
@@ -129,9 +142,11 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.MOVE_VEHICLE_S2C)) {
             VehicleMoveS2CPacket typedPacket = (VehicleMoveS2CPacket) packet;
-            ((VehicleMoveS2CPacketAccessor)typedPacket).setX(offsetX(typedPacket.getX(),offset));
-            ((VehicleMoveS2CPacketAccessor)typedPacket).setZ(offsetZ(typedPacket.getZ(),offset));
-            return typedPacket;
+
+            Entity dummyEntity = new ArmorStandEntity(world, offsetX(typedPacket.getX(),offset), typedPacket.getY(),offsetZ(typedPacket.getZ(),offset));
+            dummyEntity.setAngles(typedPacket.getYaw(),typedPacket.getPitch());
+
+            return new VehicleMoveS2CPacket(dummyEntity);
         }
         // todo we might wanna change this later!
         if (packetType.equals(PlayPackets.SET_DEFAULT_SPAWN_POSITION)) {
@@ -145,11 +160,79 @@ public class S2CPacketOffsetter {
         if (packetType.equals(PlayPackets.LIGHT_UPDATE)) {
             LightUpdateS2CPacket typedPacket = (LightUpdateS2CPacket) packet;
             ChunkPos newChunkPos = offset(new ChunkPos(typedPacket.getChunkX(), typedPacket.getChunkZ()),offset);
-            ((LightUpdateS2CPacketAccessor)typedPacket).setChunkX(newChunkPos.x);
-            ((LightUpdateS2CPacketAccessor)typedPacket).setChunkZ(newChunkPos.z);
+            ((HasAccessiblePos)typedPacket).juhc$setChunkX(newChunkPos.x);
+            ((HasAccessiblePos)typedPacket).juhc$setChunkZ(newChunkPos.z);
             return typedPacket;
         }
-        //todo item and mob nbt stuff
+        if (packetType.equals(PlayPackets.SET_CHUNK_CACHE_CENTER)) {
+            ChunkRenderDistanceCenterS2CPacket typedPacket = (ChunkRenderDistanceCenterS2CPacket) packet;
+            ChunkPos oldPos = new ChunkPos(typedPacket.getChunkX(), typedPacket.getChunkZ());
+            ChunkPos newPos = offset(oldPos,offset);
+            return new ChunkRenderDistanceCenterS2CPacket(newPos.x,newPos.z);
+        }
+        if (packetType.equals(PlayPackets.TELEPORT_ENTITY)) {
+            EntityPositionS2CPacket typedPacket = (EntityPositionS2CPacket) packet;
+
+            Entity dummyEntity = new ArmorStandEntity(world, offsetX(typedPacket.getX(),offset), typedPacket.getY(), offsetZ(typedPacket.getZ(),offset));
+            dummyEntity.setOnGround(typedPacket.isOnGround());
+            dummyEntity.setAngles(typedPacket.getYaw(), typedPacket.getPitch());
+            dummyEntity.setId(typedPacket.getEntityId());
+
+            return new EntityPositionS2CPacket(dummyEntity);
+        }
+        if (packetType.equals(PlayPackets.LEVEL_EVENT)) {
+            WorldEventS2CPacket typedPacket = (WorldEventS2CPacket) packet;
+
+            return new WorldEventS2CPacket(typedPacket.getEventId(),offset(typedPacket.getPos(),offset),typedPacket.getData(),typedPacket.isGlobal());
+        }
+        if (packetType.equals(PlayPackets.SET_EQUIPMENT)) {
+            EntityEquipmentUpdateS2CPacket typedPacket = (EntityEquipmentUpdateS2CPacket) packet;
+            List<Pair<EquipmentSlot, ItemStack>> equipmentList = typedPacket.getEquipmentList();
+            ArrayList<Pair<EquipmentSlot, ItemStack>> newEquipmentList = new ArrayList<>();
+            for (Pair<EquipmentSlot, ItemStack> pair : equipmentList)
+                newEquipmentList.add(Pair.of(pair.getFirst(), offset(pair.getSecond(),offset)));
+
+            return new EntityEquipmentUpdateS2CPacket(typedPacket.getEntityId(),newEquipmentList);
+        }
+        if (packetType.equals(PlayPackets.CONTAINER_SET_SLOT)) {
+            ScreenHandlerSlotUpdateS2CPacket typedPacket = (ScreenHandlerSlotUpdateS2CPacket) packet;
+            return new ScreenHandlerSlotUpdateS2CPacket(typedPacket.getSyncId(), typedPacket.getRevision(), typedPacket.getSlot(), offset(typedPacket.getStack(),offset));
+        }
+        if (packetType.equals(PlayPackets.CONTAINER_SET_CONTENT)) {
+            InventoryS2CPacket typedPacket = (InventoryS2CPacket) packet;
+            List<ItemStack> contents = typedPacket.getContents();
+            DefaultedList<ItemStack> newContents = DefaultedList.ofSize(contents.size(), ItemStack.EMPTY);
+            for (int i = 0; i < contents.size(); i++)
+                newContents.set(i, offset(contents.get(i),offset));
+
+            return new InventoryS2CPacket(typedPacket.getSyncId(), typedPacket.getRevision(), newContents, offset(typedPacket.getCursorStack(),offset));
+        }
+        if (packetType.equals((PlayPackets.SET_ENTITY_DATA))) {
+            EntityTrackerUpdateS2CPacket typedPacket = (EntityTrackerUpdateS2CPacket) packet;
+            ArrayList<DataTracker.SerializedEntry<?>> newTrackedValues = new ArrayList<>(typedPacket.trackedValues().size());
+            if (typedPacket.trackedValues().isEmpty()) return packet;
+            for (int i = 0; i < typedPacket.trackedValues().size(); i++)
+            {
+                DataTracker.SerializedEntry<?> entry = typedPacket.trackedValues().get(i);
+                DataTracker.SerializedEntry<?> newEntry = new DataTracker.SerializedEntry<Object>(entry.id(), (TrackedDataHandler<Object>) entry.handler(), offsetData(entry.value(), offset));
+                newTrackedValues.add(newEntry);
+            }
+            return new EntityTrackerUpdateS2CPacket(typedPacket.id(), newTrackedValues);
+
+        }
+        if (packetType.equals(PlayPackets.SET_ENTITY_DATA)) {
+            EntityTrackerUpdateS2CPacket typedPacket = (EntityTrackerUpdateS2CPacket) packet;
+            ArrayList<DataTracker.SerializedEntry<?>> newTrackedValues = new ArrayList<>(typedPacket.trackedValues().size());
+            if (typedPacket.trackedValues().isEmpty()) return packet;
+            for (int i = 0; i < typedPacket.trackedValues().size(); i++)
+            {
+                DataTracker.SerializedEntry<?> entry = typedPacket.trackedValues().get(i);
+                DataTracker.SerializedEntry<?> newEntry = new DataTracker.SerializedEntry<Object>(entry.id(), (TrackedDataHandler<Object>) entry.handler(), offsetData(entry.value(), offset));
+                newTrackedValues.add(newEntry);
+            }
+            return new EntityTrackerUpdateS2CPacket(typedPacket.id(), newTrackedValues);
+
+        }
 
 
 
@@ -158,13 +241,27 @@ public class S2CPacketOffsetter {
         return packet;
     }
 
+    private static Object offsetData(Object value, Offset offset)
+    {
+        if (value instanceof ItemStack itemStack) {
+            return(offset(itemStack,offset));
+        }
+        if (value instanceof BlockPos blockPos) {
+            return(offset(blockPos,offset));
+        }
+        if (value instanceof Optional<?> optional) {
+            if (optional.isPresent()) return Optional.of(offsetData(optional.get(), offset));
+        }
+        return value;
+    }
+
     private static Vec3d offset(Vec3d vec3d, Offset offset) {
         return new Vec3d(vec3d.getX() + offset.getX(), vec3d.y, vec3d.getZ() + offset.getZ());
     }
 
     public static BlockPos offset(BlockPos blockPos, Offset offset)
     {
-        return blockPos.add(offset.getBlockPos());
+        return new BlockPos(blockPos.getX() + offset.getX(), blockPos.getY(), blockPos.getZ() + offset.getZ());
     }
 
     public static double offsetX(double x, Offset offset)
@@ -188,4 +285,20 @@ public class S2CPacketOffsetter {
         return new ChunkPos(chunkPos.x + offset.getChunkX(), chunkPos.z + offset.getChunkZ());
     }
 
+    public static ItemStack offset(ItemStack itemStack, Offset offset) {
+        if (itemStack == null) return null;
+
+        if (itemStack.isOf(Items.COMPASS)) {
+            LodestoneTrackerComponent lodestoneComponent = itemStack.getComponents().get(DataComponentTypes.LODESTONE_TRACKER);
+            if (lodestoneComponent == null || lodestoneComponent.target().isEmpty()) return itemStack;
+            LodestoneTrackerComponent newLodestoneComponent = new LodestoneTrackerComponent(Optional.of(offset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
+            itemStack.set(DataComponentTypes.LODESTONE_TRACKER, newLodestoneComponent);
+        }
+        return itemStack;
+    }
+
+
+    private static GlobalPos offset(GlobalPos globalPos, Offset offset) {
+        return new GlobalPos(globalPos.dimension(), offset(globalPos.pos(),offset));
+    }
 }

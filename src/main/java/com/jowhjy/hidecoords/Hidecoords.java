@@ -15,4 +15,6 @@ public class Hidecoords implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CoordoffsetCommand.register(dispatcher, registryAccess));
     }
 
+
+
 }

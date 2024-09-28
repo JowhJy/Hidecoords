@@ -2,6 +2,7 @@ package com.jowhjy.hidecoords;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import org.jetbrains.annotations.NotNull;
 
 public class Offset {
     BlockPos blockPos;
@@ -41,6 +42,21 @@ public class Offset {
     public ChunkPos getChunkPos()
     {
         return chunkPos;
+    }
+
+    //todo credit jt_prince
+    public static BlockPos align(BlockPos blockPos) {
+
+        // Add half of the divisor so that the output is rounded instead of just floored
+        int x = blockPos.getX() + 8;
+        int z = blockPos.getZ() + 8;
+
+        return new BlockPos(x >> 4 << 4, blockPos.getY(), z >> 4 << 4);
+    }
+
+    public static Offset zeroAtLocation(BlockPos blockPos)
+    {
+        return new Offset(align(blockPos.multiply(-1)));
     }
 
 

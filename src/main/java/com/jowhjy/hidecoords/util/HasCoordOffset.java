@@ -9,4 +9,9 @@ public interface HasCoordOffset {
     public default Offset juhc$getCoordOffset() {
         return null;
     }
+
+    @Unique
+    default void juhc$setCoordOffset(Offset offset) {
+
+    }
 }

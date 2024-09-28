@@ -1,67 +1,95 @@
 package com.jowhjy.hidecoords.util;
 
 import com.jowhjy.hidecoords.Offset;
-import com.jowhjy.hidecoords.mixin.VehicleMoveC2SPacketAccessor;
-import com.jowhjy.hidecoords.mixin.VehicleMoveS2CPacketAccessor;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LodestoneTrackerComponent;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.listener.PacketListener;
+import net.minecraft.network.listener.ServerPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.PacketType;
 import net.minecraft.network.packet.PlayPackets;
 import net.minecraft.network.packet.c2s.play.*;
-import net.minecraft.network.packet.s2c.play.VehicleMoveS2CPacket;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.util.math.Vec3d;
+
+import java.util.Optional;
 
 public class C2SPacketOffsetter {
-    public static <T extends PacketListener> Packet<?> offsetPacket(Packet<T> packet, Offset offset) {
+    public static <T extends PacketListener> Packet<ServerPlayPacketListener> offsetPacket(Packet<T> packet, Offset offset) {
 
         PacketType<? extends Packet<T>> packetType = packet.getPacketId();
 
-        if (packet.equals(PlayPackets.MOVE_VEHICLE_C2S))
+        if (packetType.equals(PlayPackets.MOVE_VEHICLE_C2S))
         {
             VehicleMoveC2SPacket typedPacket = (VehicleMoveC2SPacket) packet;
-            ((VehicleMoveC2SPacketAccessor)typedPacket).setX(unoffsetX(typedPacket.getX(),offset));
-            ((VehicleMoveC2SPacketAccessor)typedPacket).setZ(unoffsetZ(typedPacket.getZ(),offset));
-            return typedPacket;
+
+            Entity dummyEntity = new ArmorStandEntity(null, unoffsetX(typedPacket.getX(),offset), typedPacket.getY(),unoffsetZ(typedPacket.getZ(),offset));
+            dummyEntity.setAngles(typedPacket.getYaw(),typedPacket.getPitch());
+
+            return new VehicleMoveC2SPacket(dummyEntity);
 
         }
-        if (packet.equals(PlayPackets.PLAYER_ACTION))
+        if (packetType.equals(PlayPackets.PLAYER_ACTION))
         {
             PlayerActionC2SPacket typedPacket = (PlayerActionC2SPacket) packet;
             return new PlayerActionC2SPacket(typedPacket.getAction(),unoffset(typedPacket.getPos(),offset),typedPacket.getDirection(),typedPacket.getSequence());
         }
-        if (packet.equals(PlayPackets.MOVE_PLAYER_POS_ROT))
+        if (packetType.equals(PlayPackets.MOVE_PLAYER_POS_ROT))
         {
             PlayerMoveC2SPacket.Full typedPacket = (PlayerMoveC2SPacket.Full) packet;
             return new PlayerMoveC2SPacket.Full(unoffsetX(typedPacket.getX(0),offset),typedPacket.getY(0),unoffsetZ(typedPacket.getZ(0),offset),typedPacket.getYaw(0),typedPacket.getPitch(0),typedPacket.isOnGround());
         }
-        if (packet.equals(PlayPackets.MOVE_PLAYER_POS))
+        if (packetType.equals(PlayPackets.MOVE_PLAYER_POS))
         {
             PlayerMoveC2SPacket.PositionAndOnGround typedPacket = (PlayerMoveC2SPacket.PositionAndOnGround) packet;
             return new PlayerMoveC2SPacket.PositionAndOnGround(unoffsetX(typedPacket.getX(0),offset),typedPacket.getY(0),unoffsetZ(typedPacket.getZ(0),offset),typedPacket.isOnGround());
         }
-        if (packet.equals(PlayPackets.JIGSAW_GENERATE))
+        if (packetType.equals(PlayPackets.JIGSAW_GENERATE))
         {
             JigsawGeneratingC2SPacket typedPacket = (JigsawGeneratingC2SPacket) packet;
             return new JigsawGeneratingC2SPacket(unoffset(typedPacket.getPos(),offset),typedPacket.getMaxDepth(),typedPacket.shouldKeepJigsaws());
         }
-        if (packet.equals(PlayPackets.SET_JIGSAW_BLOCK))
+        if (packetType.equals(PlayPackets.SET_JIGSAW_BLOCK))
         {
             UpdateJigsawC2SPacket typedPacket = (UpdateJigsawC2SPacket) packet;
             return new UpdateJigsawC2SPacket(unoffset(typedPacket.getPos(),offset),typedPacket.getName(),typedPacket.getTarget(),typedPacket.getPool(),typedPacket.getFinalState(),typedPacket.getJointType(),typedPacket.getSelectionPriority(),typedPacket.getPlacementPriority());
         }
-        if (packet.equals(PlayPackets.SET_COMMAND_BLOCK))
+        if (packetType.equals(PlayPackets.SET_COMMAND_BLOCK))
         {
             UpdateCommandBlockC2SPacket typedPacket = (UpdateCommandBlockC2SPacket) packet;
             return new UpdateCommandBlockC2SPacket(unoffset(typedPacket.getPos(),offset),typedPacket.getCommand(),typedPacket.getType(),typedPacket.shouldTrackOutput(),typedPacket.isConditional(),typedPacket.isAlwaysActive());
         }
+        if (packetType.equals(PlayPackets.USE_ITEM_ON))
+        {
+            PlayerInteractBlockC2SPacket typedPacket = (PlayerInteractBlockC2SPacket) packet;
+            BlockHitResult blockHitResult = typedPacket.getBlockHitResult();
+            BlockHitResult newBlockHitResult = new BlockHitResult(unoffset(blockHitResult.getPos(),offset), blockHitResult.getSide(), unoffset(blockHitResult.getBlockPos(),offset), blockHitResult.isInsideBlock());
+
+            return new PlayerInteractBlockC2SPacket(typedPacket.getHand(), newBlockHitResult, typedPacket.getSequence());
+        }
+        if (packetType.equals(PlayPackets.SET_CREATIVE_MODE_SLOT))
+        {
+            CreativeInventoryActionC2SPacket typedPacket = (CreativeInventoryActionC2SPacket) packet;
+
+            return new CreativeInventoryActionC2SPacket(typedPacket.slot(), unoffset(typedPacket.stack(),offset));
+        }
 
 
-        return packet;
+        return (Packet<ServerPlayPacketListener>) packet;
+    }
+
+    private static Vec3d unoffset(Vec3d pos, Offset offset) {
+        return new Vec3d(pos.getX() - offset.getX(), pos.y, pos.getZ() - offset.getZ());
     }
 
     private static BlockPos unoffset(BlockPos pos, Offset offset) {
-        return pos.subtract(offset.getBlockPos());
+        return new BlockPos(pos.getX() - offset.getX(), pos.getY(), pos.getZ() - offset.getZ());
     }
 
     private static double unoffsetX(double x, Offset offset) {
@@ -70,5 +98,21 @@ public class C2SPacketOffsetter {
 
     private static double unoffsetZ(double z, Offset offset) {
         return z - offset.getZ();
+    }
+
+    public static ItemStack unoffset(ItemStack itemStack, Offset offset) {
+        if (itemStack == null) return null;
+
+        if (itemStack.isOf(Items.COMPASS)) {
+            LodestoneTrackerComponent lodestoneComponent = itemStack.getComponents().get(DataComponentTypes.LODESTONE_TRACKER);
+            if (lodestoneComponent == null || lodestoneComponent.target().isEmpty()) return itemStack;
+            LodestoneTrackerComponent newLodestoneComponent = new LodestoneTrackerComponent(Optional.of(unoffset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
+            itemStack.set(DataComponentTypes.LODESTONE_TRACKER, newLodestoneComponent);
+        }
+        return itemStack;
+    }
+
+    private static GlobalPos unoffset(GlobalPos globalPos, Offset offset) {
+        return new GlobalPos(globalPos.dimension(), unoffset(globalPos.pos(),offset));
     }
 }
