@@ -79,9 +79,11 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.PLAYER_LOOK_AT)) {
             LookAtS2CPacket typedPacket = (LookAtS2CPacket) packet;
-            double x = offsetX(typedPacket.getTargetPosition(world).getX(), offset);
-            double y = typedPacket.getTargetPosition(world).getY();
-            double z = offsetZ(typedPacket.getTargetPosition(world).getZ(), offset);
+            Vec3d targetPos = typedPacket.getTargetPosition(world);
+            if (targetPos == null) return packet;
+            double x = offsetX(targetPos.getX(), offset);
+            double y = targetPos.getY();
+            double z = offsetZ(targetPos.getZ(), offset);
             return new LookAtS2CPacket(typedPacket.getSelfAnchor(), x, y, z);
         }
         if (packetType.equals(PlayPackets.CHUNKS_BIOMES)) {
@@ -208,20 +210,7 @@ public class S2CPacketOffsetter {
             for (int i = 0; i < typedPacket.trackedValues().size(); i++)
             {
                 DataTracker.SerializedEntry<?> entry = typedPacket.trackedValues().get(i);
-                DataTracker.SerializedEntry<?> newEntry = new DataTracker.SerializedEntry<Object>(entry.id(), (TrackedDataHandler<Object>) entry.handler(), offsetData(entry.value(), offset));
-                newTrackedValues.add(newEntry);
-            }
-            return new EntityTrackerUpdateS2CPacket(typedPacket.id(), newTrackedValues);
-
-        }
-        if (packetType.equals(PlayPackets.SET_ENTITY_DATA)) {
-            EntityTrackerUpdateS2CPacket typedPacket = (EntityTrackerUpdateS2CPacket) packet;
-            ArrayList<DataTracker.SerializedEntry<?>> newTrackedValues = new ArrayList<>(typedPacket.trackedValues().size());
-            if (typedPacket.trackedValues().isEmpty()) return packet;
-            for (int i = 0; i < typedPacket.trackedValues().size(); i++)
-            {
-                DataTracker.SerializedEntry<?> entry = typedPacket.trackedValues().get(i);
-                DataTracker.SerializedEntry<?> newEntry = new DataTracker.SerializedEntry<Object>(entry.id(), (TrackedDataHandler<Object>) entry.handler(), offsetData(entry.value(), offset));
+                DataTracker.SerializedEntry<?> newEntry = new DataTracker.SerializedEntry<>(entry.id(), (TrackedDataHandler<Object>) entry.handler(), offsetData(entry.value(), offset));
                 newTrackedValues.add(newEntry);
             }
             return new EntityTrackerUpdateS2CPacket(typedPacket.id(), newTrackedValues);

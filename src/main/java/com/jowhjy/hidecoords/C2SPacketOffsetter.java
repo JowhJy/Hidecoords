@@ -1,5 +1,7 @@
 package com.jowhjy.hidecoords;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.Entity;
@@ -12,6 +14,7 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.PacketType;
 import net.minecraft.network.packet.PlayPackets;
 import net.minecraft.network.packet.c2s.play.*;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
@@ -77,6 +80,19 @@ public class C2SPacketOffsetter {
             CreativeInventoryActionC2SPacket typedPacket = (CreativeInventoryActionC2SPacket) packet;
 
             return new CreativeInventoryActionC2SPacket(typedPacket.slot(), unoffset(typedPacket.stack(),offset));
+        }
+        if (packetType.equals((PlayPackets.CONTAINER_CLICK)))
+        {
+            ClickSlotC2SPacket typedPacket = (ClickSlotC2SPacket) packet;
+            ItemStack newStack = unoffset(typedPacket.getStack(),offset);
+
+            Int2ObjectMap<ItemStack> int2ObjectMap = typedPacket.getModifiedStacks();
+
+            for (int j = 0; j < int2ObjectMap.size(); j++) {
+                int2ObjectMap.put(j, unoffset(int2ObjectMap.get(j),offset));
+            }
+
+            return new ClickSlotC2SPacket(typedPacket.getSyncId(), typedPacket.getRevision(), typedPacket.getSlot(), typedPacket.getButton(),typedPacket.getActionType(),newStack,int2ObjectMap);
         }
 
 
