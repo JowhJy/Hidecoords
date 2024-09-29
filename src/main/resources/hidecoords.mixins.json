@@ -8,7 +8,6 @@
     "ChunkDeltaUpdateS2CPacketAccessor",
     "ChunkDeltaUpdateS2CPacketMixin",
     "ClientConnectionMixin",
-    "LightUpdateS2CPacketAccessor",
     "LightUpdateS2CPacketMixin",
     "PlayerManagerMixin",
     "ServerPlayerEntityMixin",

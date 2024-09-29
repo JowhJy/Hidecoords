@@ -44,7 +44,6 @@ public class Offset {
         return chunkPos;
     }
 
-    //todo credit jt_prince
     public static BlockPos align(BlockPos blockPos) {
 
         // Add half of the divisor so that the output is rounded instead of just floored

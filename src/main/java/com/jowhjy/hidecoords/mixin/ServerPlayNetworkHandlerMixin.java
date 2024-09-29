@@ -29,7 +29,6 @@ import java.util.Set;
 @Mixin(ServerPlayNetworkHandler.class)
 public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkHandler implements HasCoordOffset {
 
-    //todo credit jt_prince
     @Unique
     private static final Set<PacketType<?>> PACKETS_WORLD_BORDER = Set.of(
             // These packets are translated in WorldBorderObfuscator, not this file.
@@ -82,17 +81,6 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         }
 
         super.send(newPacket, callbacks);
-    }
-
-    //debugging
-    @Inject(method="onPlayerMove", at = @At("TAIL"))
-    public void deubgTest(PlayerMoveC2SPacket packet, CallbackInfo ci) {
-        //System.out.println(getPlayer().getBlockPos());
-    }
-    //debugging
-    @Inject(method="onCommandExecution", at = @At("TAIL"))
-    public void deubgTest2(CommandExecutionC2SPacket packet, CallbackInfo ci) {
-        //System.out.println(packet + " is at the end of oncommandexec");
     }
 
 }

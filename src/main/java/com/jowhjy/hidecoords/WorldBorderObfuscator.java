@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-//todo full credit jt_prince
 /**
+ * Adapted from jt_prince
  * World border packets require special handling, since applying a plain offset would run into two problems:
  * <ul>
  *     <li>The player can intercept the packet and use it to derive their offset.</li>

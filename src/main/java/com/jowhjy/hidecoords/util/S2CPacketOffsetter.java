@@ -1,11 +1,8 @@
 package com.jowhjy.hidecoords.util;
 
 import com.jowhjy.hidecoords.Offset;
-import com.jowhjy.hidecoords.WorldBorderObfuscator;
 import com.jowhjy.hidecoords.mixin.ChunkDeltaUpdateS2CPacketAccessor;
-import com.jowhjy.hidecoords.mixin.LightUpdateS2CPacketAccessor;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.Entity;
@@ -14,7 +11,6 @@ import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -29,7 +25,6 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 
 public class S2CPacketOffsetter {
@@ -148,7 +143,6 @@ public class S2CPacketOffsetter {
 
             return new VehicleMoveS2CPacket(dummyEntity);
         }
-        // todo we might wanna change this later!
         if (packetType.equals(PlayPackets.SET_DEFAULT_SPAWN_POSITION)) {
             PlayerSpawnPositionS2CPacket typedPacket = (PlayerSpawnPositionS2CPacket) packet;
             return new PlayerSpawnPositionS2CPacket(offset(typedPacket.getPos(), offset), typedPacket.getAngle());
