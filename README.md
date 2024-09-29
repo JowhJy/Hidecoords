@@ -18,7 +18,7 @@ A server that wants to actually enforce the gamerule `reducedDebugInfo` without 
 
 Disclaimer
 ---
-I'm a new modder. I needed this for a server I'm working on and made it as a learning opportunity. Therefore the mod doesn't have all the features and the code is quite messy. But I still figured it might be useful to some others. Feel free to use the code as you please, and improvement suggestions are welcome!
+I'm a new modder. I needed this for a server I'm working on and made it as a learning opportunity. Therefore the mod doesn't have all the features, the code is quite messy, and there could be bugs or crashes. But I still figured it might be useful to some others. Feel free to use the code as you please, and improvement suggestions are welcome!
 Known issues:
 * The main feature missing here from CoordinateOffset are the vast configuration options. Offsets are always set so you spawn in chunk 0,0 and this resets on death and dimension change.
 * Worldborder growing or shrinking looks really weird.
