@@ -1,6 +1,5 @@
-package com.jowhjy.hidecoords.util;
+package com.jowhjy.hidecoords;
 
-import com.jowhjy.hidecoords.Offset;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.Entity;

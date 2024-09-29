@@ -1,7 +1,7 @@
-package com.jowhjy.hidecoords.util;
+package com.jowhjy.hidecoords;
 
-import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.mixin.ChunkDeltaUpdateS2CPacketAccessor;
+import com.jowhjy.hidecoords.util.HasAccessiblePos;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LodestoneTrackerComponent;

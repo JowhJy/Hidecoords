@@ -1,13 +1,12 @@
 package com.jowhjy.hidecoords.mixin;
 
 import com.jowhjy.hidecoords.Offset;
-import com.jowhjy.hidecoords.util.C2SPacketOffsetter;
+import com.jowhjy.hidecoords.C2SPacketOffsetter;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.listener.ServerPlayPacketListener;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
