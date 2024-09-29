@@ -4,10 +4,10 @@
   "version": "${version}",
   "name": "Hide coordinates",
   "description": "",
-  "authors": [],
+  "authors": ["JowhJy"],
   "contact": {},
   "license": "All-Rights-Reserved",
-  "icon": "assets/hidecoords/icon.png",
+  "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
     "client": [
