@@ -255,14 +255,6 @@ public class S2CPacketOffsetter {
     {
         return z + offset.getZ();
     }
-    public static double offsetX8(double x8, Offset offset)
-    {
-        return x8 + offset.getX() * 8;
-    }
-    public static double offsetZ8(double z8, Offset offset)
-    {
-        return z8 + offset.getZ() * 8;
-    }
     public static ChunkPos offset(ChunkPos chunkPos, Offset offset)
     {
         return new ChunkPos(chunkPos.x + offset.getChunkX(), chunkPos.z + offset.getChunkZ());
@@ -271,13 +263,15 @@ public class S2CPacketOffsetter {
     public static ItemStack offset(ItemStack itemStack, Offset offset) {
         if (itemStack == null) return null;
 
+        ItemStack result = itemStack.copy();
+
         if (itemStack.isOf(Items.COMPASS)) {
             LodestoneTrackerComponent lodestoneComponent = itemStack.getComponents().get(DataComponentTypes.LODESTONE_TRACKER);
             if (lodestoneComponent == null || lodestoneComponent.target().isEmpty()) return itemStack;
             LodestoneTrackerComponent newLodestoneComponent = new LodestoneTrackerComponent(Optional.of(offset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
-            itemStack.set(DataComponentTypes.LODESTONE_TRACKER, newLodestoneComponent);
+            result.set(DataComponentTypes.LODESTONE_TRACKER, newLodestoneComponent);
         }
-        return itemStack;
+        return result;
     }
 
 

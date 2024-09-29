@@ -25,7 +25,7 @@ public class CoordoffsetCommand {
 
     private static int executeGet(ServerCommandSource source) {
         Offset result = ((HasCoordOffset)source.getPlayer().networkHandler).juhc$getCoordOffset();
-        source.sendFeedback(() -> Text.literal("Your offset is" + result.getBlockPos().toShortString()), false);
+        source.sendFeedback(() -> Text.literal("Your offset is " + result.getBlockPos().toShortString()), false);
         return 1;
     }
 

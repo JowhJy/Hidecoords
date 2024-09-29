@@ -14,7 +14,6 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.PacketType;
 import net.minecraft.network.packet.PlayPackets;
 import net.minecraft.network.packet.c2s.play.*;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
@@ -87,12 +86,13 @@ public class C2SPacketOffsetter {
             ItemStack newStack = unoffset(typedPacket.getStack(),offset);
 
             Int2ObjectMap<ItemStack> int2ObjectMap = typedPacket.getModifiedStacks();
+            Int2ObjectMap<ItemStack> newInt2ObjectMap = new Int2ObjectOpenHashMap<>();
 
-            for (int j = 0; j < int2ObjectMap.size(); j++) {
-                int2ObjectMap.put(j, unoffset(int2ObjectMap.get(j),offset));
+            for (int j = 0; j < newInt2ObjectMap.size(); j++) {
+                newInt2ObjectMap.put(j, unoffset(int2ObjectMap.get(j),offset));
             }
 
-            return new ClickSlotC2SPacket(typedPacket.getSyncId(), typedPacket.getRevision(), typedPacket.getSlot(), typedPacket.getButton(),typedPacket.getActionType(),newStack,int2ObjectMap);
+            return new ClickSlotC2SPacket(typedPacket.getSyncId(), typedPacket.getRevision(), typedPacket.getSlot(), typedPacket.getButton(),typedPacket.getActionType(),newStack, newInt2ObjectMap);
         }
 
 
@@ -118,13 +118,15 @@ public class C2SPacketOffsetter {
     public static ItemStack unoffset(ItemStack itemStack, Offset offset) {
         if (itemStack == null) return null;
 
+        ItemStack result = itemStack.copy();
+
         if (itemStack.isOf(Items.COMPASS)) {
             LodestoneTrackerComponent lodestoneComponent = itemStack.getComponents().get(DataComponentTypes.LODESTONE_TRACKER);
             if (lodestoneComponent == null || lodestoneComponent.target().isEmpty()) return itemStack;
             LodestoneTrackerComponent newLodestoneComponent = new LodestoneTrackerComponent(Optional.of(unoffset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
-            itemStack.set(DataComponentTypes.LODESTONE_TRACKER, newLodestoneComponent);
+            result.set(DataComponentTypes.LODESTONE_TRACKER, newLodestoneComponent);
         }
-        return itemStack;
+        return result;
     }
 
     private static GlobalPos unoffset(GlobalPos globalPos, Offset offset) {
