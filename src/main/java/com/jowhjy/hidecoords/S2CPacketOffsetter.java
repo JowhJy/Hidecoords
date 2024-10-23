@@ -11,6 +11,7 @@ import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -75,7 +76,9 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.PLAYER_POSITION)) {
             PlayerPositionLookS2CPacket typedPacket = (PlayerPositionLookS2CPacket) packet;
-            return new PlayerPositionLookS2CPacket(offsetX(typedPacket.getX(), offset), typedPacket.getY(), offsetZ(typedPacket.getZ(), offset), typedPacket.getYaw(), typedPacket.getPitch(), typedPacket.getFlags(), typedPacket.getTeleportId());
+            PlayerPosition oldPlayerPosition = typedPacket.change();
+            PlayerPosition newPlayerPosition = new PlayerPosition(offset(oldPlayerPosition.position(),offset), oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
+            return new PlayerPositionLookS2CPacket(typedPacket.teleportId(), newPlayerPosition, typedPacket.relatives());
         }
         if (packetType.equals(PlayPackets.PLAYER_LOOK_AT)) {
             LookAtS2CPacket typedPacket = (LookAtS2CPacket) packet;
@@ -97,8 +100,7 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.EXPLODE)) {
             ExplosionS2CPacket typedPacket = (ExplosionS2CPacket) packet;
-            Vec3d playerVelocity = new Vec3d(typedPacket.getPlayerVelocityX(), typedPacket.getPlayerVelocityY(), typedPacket.getPlayerVelocityZ());
-            return new ExplosionS2CPacket(offsetX(typedPacket.getX(), offset), typedPacket.getY(), offsetZ(typedPacket.getZ(), offset), typedPacket.getRadius(), typedPacket.getAffectedBlocks(), playerVelocity, typedPacket.getDestructionType(), typedPacket.getParticle(), typedPacket.getEmitterParticle(), typedPacket.getSoundEvent());
+            return new ExplosionS2CPacket(offset(typedPacket.center(),offset), typedPacket.playerKnockback(), typedPacket.explosionParticle(), typedPacket.explosionSound());
         }
         if (packetType.equals(PlayPackets.LEVEL_CHUNK_WITH_LIGHT)) {
             ChunkDataS2CPacket typedPacket = (ChunkDataS2CPacket) packet;
@@ -165,7 +167,7 @@ public class S2CPacketOffsetter {
             ChunkPos oldPos = new ChunkPos(typedPacket.getChunkX(), typedPacket.getChunkZ());
             ChunkPos newPos = offset(oldPos,offset);
             return new ChunkRenderDistanceCenterS2CPacket(newPos.x,newPos.z);
-        }
+        }/* Seemingly does not have absolute position as of 1.21.2
         if (packetType.equals(PlayPackets.TELEPORT_ENTITY)) {
             EntityPositionS2CPacket typedPacket = (EntityPositionS2CPacket) packet;
 
@@ -175,6 +177,13 @@ public class S2CPacketOffsetter {
             dummyEntity.setId(typedPacket.getEntityId());
 
             return new EntityPositionS2CPacket(dummyEntity);
+        }*/
+        if (packetType.equals(PlayPackets.ENTITY_POSITION_SYNC)) {
+            EntityPositionSyncS2CPacket typedPacket = (EntityPositionSyncS2CPacket) packet;
+            PlayerPosition oldPlayerPosition = typedPacket.values();
+            Vec3d newPosition = offset(oldPlayerPosition.position(), offset);
+            PlayerPosition newPlayerPosition = new PlayerPosition(newPosition, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
+            return new EntityPositionSyncS2CPacket(typedPacket.id(), newPlayerPosition, typedPacket.onGround());
         }
         if (packetType.equals(PlayPackets.LEVEL_EVENT)) {
             WorldEventS2CPacket typedPacket = (WorldEventS2CPacket) packet;

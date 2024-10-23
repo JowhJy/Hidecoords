@@ -44,12 +44,12 @@ public class C2SPacketOffsetter {
         if (packetType.equals(PlayPackets.MOVE_PLAYER_POS_ROT))
         {
             PlayerMoveC2SPacket.Full typedPacket = (PlayerMoveC2SPacket.Full) packet;
-            return new PlayerMoveC2SPacket.Full(unoffsetX(typedPacket.getX(0),offset),typedPacket.getY(0),unoffsetZ(typedPacket.getZ(0),offset),typedPacket.getYaw(0),typedPacket.getPitch(0),typedPacket.isOnGround());
+            return new PlayerMoveC2SPacket.Full(unoffsetX(typedPacket.getX(0),offset),typedPacket.getY(0),unoffsetZ(typedPacket.getZ(0),offset),typedPacket.getYaw(0),typedPacket.getPitch(0),typedPacket.isOnGround(), typedPacket.horizontalCollision());
         }
         if (packetType.equals(PlayPackets.MOVE_PLAYER_POS))
         {
             PlayerMoveC2SPacket.PositionAndOnGround typedPacket = (PlayerMoveC2SPacket.PositionAndOnGround) packet;
-            return new PlayerMoveC2SPacket.PositionAndOnGround(unoffsetX(typedPacket.getX(0),offset),typedPacket.getY(0),unoffsetZ(typedPacket.getZ(0),offset),typedPacket.isOnGround());
+            return new PlayerMoveC2SPacket.PositionAndOnGround(unoffsetX(typedPacket.getX(0),offset),typedPacket.getY(0),unoffsetZ(typedPacket.getZ(0),offset),typedPacket.isOnGround(), typedPacket.horizontalCollision());
         }
         if (packetType.equals(PlayPackets.JIGSAW_GENERATE))
         {

@@ -22,7 +22,6 @@ public class ClientConnectionMixin {
         if (listener instanceof ServerPlayNetworkHandler serverPlayNetworkHandler) {
             Offset offset = ((HasCoordOffset)serverPlayNetworkHandler).juhc$getCoordOffset();
             Packet<ServerPlayPacketListener> newPacket = C2SPacketOffsetter.offsetPacket(packet, offset);
-            //if (newPacket instanceof PlayerMoveC2SPacket.PositionAndOnGround blub) System.out.println(blub.getX(0));
             newPacket.apply((ServerPlayNetworkHandler) listener);
             ci.cancel();
         }
