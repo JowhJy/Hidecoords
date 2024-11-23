@@ -1,5 +1,6 @@
 package com.jowhjy.hidecoords.mixin;
 
+import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
 import com.mojang.authlib.GameProfile;
@@ -18,7 +19,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayerEntity.class)
@@ -33,15 +33,16 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     @Shadow public abstract ServerWorld getServerWorld();
 
     @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;setServerWorld(Lnet/minecraft/server/world/ServerWorld;)V"))
-    public void juhc$changeOffsetOnDimensionChange(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir)
+    public void hidecoords$changeOffsetOnDimensionChange(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir)
     {
-        ((HasCoordOffset)(this.networkHandler)).juhc$setCoordOffset(Offset.zeroAtLocation(BlockPos.ofFloored(teleportTarget.position())));
+        ((HasCoordOffset)(this.networkHandler)).hidecoords$setCoordOffset(Offset.zeroAtLocation(BlockPos.ofFloored(teleportTarget.position())));
     }
 
     //todo this is very inefficient!
     @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At("TAIL"))
-    public void juhc$changeBorderOnTeleport(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir)
+    public void hidecoords$changeBorderOnTeleport(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir)
     {
+        if (!getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE)) return;
         this.networkHandler.sendPacket(new WorldBorderSizeChangedS2CPacket(this.getServerWorld().getWorldBorder()));
         this.networkHandler.sendPacket(new WorldBorderCenterChangedS2CPacket(this.getServerWorld().getWorldBorder()));
     }
@@ -49,6 +50,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     public void travel(Vec3d movementInput)
     {
         super.travel(movementInput);
+        if (!getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE)) return;
         this.networkHandler.sendPacket(new WorldBorderSizeChangedS2CPacket(this.getServerWorld().getWorldBorder()));
         this.networkHandler.sendPacket(new WorldBorderCenterChangedS2CPacket(this.getServerWorld().getWorldBorder()));
     }

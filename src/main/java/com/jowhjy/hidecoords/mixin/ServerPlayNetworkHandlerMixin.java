@@ -1,5 +1,6 @@
 package com.jowhjy.hidecoords.mixin;
 
+import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.WorldBorderObfuscator;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
@@ -41,7 +42,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     @Shadow public abstract ServerPlayerEntity getPlayer();
 
     @Unique
-    Offset juhc$coordOffset;
+    Offset hidecoords$coordOffset;
 
     public ServerPlayNetworkHandlerMixin(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData) {
         super(server, connection, clientData);
@@ -49,33 +50,39 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
 
     @Unique
     @Override
-    public Offset juhc$getCoordOffset()
+    public Offset hidecoords$getCoordOffset()
     {
-        return juhc$coordOffset;
+        return hidecoords$coordOffset;
     }
     @Unique
     @Override
-    public void juhc$setCoordOffset(Offset coordOffset)
+    public void hidecoords$setCoordOffset(Offset coordOffset)
     {
-        juhc$coordOffset = coordOffset;
+        hidecoords$coordOffset = coordOffset;
     }
 
     /** Inject into the constructor to make the offsetPacket
      */
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void juhc$createOffset(MinecraftServer server, ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci){
+    public void hidecoords$createOffset(MinecraftServer server, ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci){
 
-        juhc$coordOffset = Offset.zeroAtLocation(player.getBlockPos());
+        hidecoords$coordOffset = Offset.zeroAtLocation(player.getBlockPos());
 
     }
 
     @Override
     public void send(Packet<?> packet, @Nullable PacketCallbacks callbacks)
     {
-        Packet<?> newPacket = S2CPacketOffsetter.offsetPacket(packet, juhc$coordOffset, this.getPlayer().getWorld());
+        //no offset if gamerule off
+        if (!this.getPlayer().getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE)) {
+            super.send(packet, callbacks);
+            return;
+        }
+
+        Packet<?> newPacket = S2CPacketOffsetter.offsetPacket(packet, hidecoords$coordOffset, this.getPlayer().getWorld());
         if (PACKETS_WORLD_BORDER.contains(newPacket.getPacketId()))
         {
-            newPacket = WorldBorderObfuscator.translate(newPacket,juhc$coordOffset,this.getPlayer());
+            newPacket = WorldBorderObfuscator.translate(newPacket, hidecoords$coordOffset,this.getPlayer());
         }
 
         super.send(newPacket, callbacks);

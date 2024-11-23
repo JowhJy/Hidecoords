@@ -1,5 +1,6 @@
 package com.jowhjy.hidecoords.mixin;
 
+import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.C2SPacketOffsetter;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
@@ -17,10 +18,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ClientConnectionMixin {
 
     @Inject(method = "handlePacket", at =@At("HEAD"), cancellable = true)
-    private static <T extends PacketListener> void juhc$offsetIncomingPacket(Packet<T> packet, PacketListener listener, CallbackInfo ci)
+    private static <T extends PacketListener> void hidecoords$offsetIncomingPacket(Packet<T> packet, PacketListener listener, CallbackInfo ci)
     {
+
         if (listener instanceof ServerPlayNetworkHandler serverPlayNetworkHandler) {
-            Offset offset = ((HasCoordOffset)serverPlayNetworkHandler).juhc$getCoordOffset();
+            //dont offset if gamerule off
+            if (!serverPlayNetworkHandler.getPlayer().getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE)) return;
+
+            Offset offset = ((HasCoordOffset)serverPlayNetworkHandler).hidecoords$getCoordOffset();
             Packet<ServerPlayPacketListener> newPacket = C2SPacketOffsetter.offsetPacket(packet, offset);
             newPacket.apply((ServerPlayNetworkHandler) listener);
             ci.cancel();

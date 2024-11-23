@@ -4,7 +4,6 @@ import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -24,13 +23,13 @@ public class CoordoffsetCommand {
     }
 
     private static int executeGet(ServerCommandSource source) {
-        Offset result = ((HasCoordOffset)source.getPlayer().networkHandler).juhc$getCoordOffset();
+        Offset result = ((HasCoordOffset)source.getPlayer().networkHandler).hidecoords$getCoordOffset();
         source.sendFeedback(() -> Text.literal("Your offset is " + result.getBlockPos().toShortString()), false);
         return 1;
     }
 
     private static int executeSet(ServerCommandSource source, BlockPos pos) {
-        ((HasCoordOffset)source.getPlayer().networkHandler).juhc$setCoordOffset(Offset.zeroAtLocation(pos));
+        ((HasCoordOffset)source.getPlayer().networkHandler).hidecoords$setCoordOffset(Offset.zeroAtLocation(pos));
         source.sendFeedback(() -> Text.literal(pos.toShortString() + " is now 0,0 for you"), false);
         return 1;
     }

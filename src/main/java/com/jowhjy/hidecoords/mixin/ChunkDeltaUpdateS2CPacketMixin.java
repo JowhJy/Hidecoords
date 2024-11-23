@@ -16,28 +16,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ChunkDeltaUpdateS2CPacketMixin implements HasAccessiblePos {
 
     @Unique
-    ChunkSectionPos juhc$accessibleSectionPos;
+    ChunkSectionPos hidecoords$accessibleSectionPos;
 
     @Inject(method = "<init>(Lnet/minecraft/util/math/ChunkSectionPos;Lit/unimi/dsi/fastutil/shorts/ShortSet;Lnet/minecraft/world/chunk/ChunkSection;)V", at = @At("TAIL"))
-    public void juhc$modifyConstructor(ChunkSectionPos sectionPos, ShortSet positions, ChunkSection section, CallbackInfo ci)
+    public void hidecoords$modifyConstructor(ChunkSectionPos sectionPos, ShortSet positions, ChunkSection section, CallbackInfo ci)
     {
-        juhc$accessibleSectionPos = sectionPos;
+        hidecoords$accessibleSectionPos = sectionPos;
     }
 
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeLong(J)Lnet/minecraft/network/PacketByteBuf;"))
-    public long juhc$changeSectionPos(long l)
+    public long hidecoords$changeSectionPos(long l)
     {
-        return juhc$accessibleSectionPos.asLong();
+        return hidecoords$accessibleSectionPos.asLong();
     }
 
     @Override
-    public void juhc$setChunkX(int chunkX) {
-        juhc$accessibleSectionPos = ChunkSectionPos.from(chunkX, juhc$accessibleSectionPos.getSectionY(), juhc$accessibleSectionPos.getSectionZ());
+    public void hidecoords$setChunkX(int chunkX) {
+        hidecoords$accessibleSectionPos = ChunkSectionPos.from(chunkX, hidecoords$accessibleSectionPos.getSectionY(), hidecoords$accessibleSectionPos.getSectionZ());
     }
 
     @Override
-    public void juhc$setChunkZ(int chunkZ) {
-        juhc$accessibleSectionPos = ChunkSectionPos.from(juhc$accessibleSectionPos.getSectionX(), juhc$accessibleSectionPos.getSectionY(), chunkZ);
+    public void hidecoords$setChunkZ(int chunkZ) {
+        hidecoords$accessibleSectionPos = ChunkSectionPos.from(hidecoords$accessibleSectionPos.getSectionX(), hidecoords$accessibleSectionPos.getSectionY(), chunkZ);
 
     }
 }

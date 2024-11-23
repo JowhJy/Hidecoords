@@ -16,34 +16,34 @@ import java.util.BitSet;
 @Mixin(ChunkDataS2CPacket.class)
 public class ChunkDataS2CPacketMixin implements HasAccessiblePos {
 
-    @Unique int juhc$accessibleChunkX;
-    @Unique int juhc$accessibleChunkZ;
+    @Unique int hidecoords$accessibleChunkX;
+    @Unique int hidecoords$accessibleChunkZ;
 
     @Override
-    public void juhc$setChunkX(int chunkX) {
-        juhc$accessibleChunkX = chunkX;
+    public void hidecoords$setChunkX(int chunkX) {
+        hidecoords$accessibleChunkX = chunkX;
     }
 
     @Override
-    public void juhc$setChunkZ(int chunkZ) {
-        juhc$accessibleChunkZ = chunkZ;
+    public void hidecoords$setChunkZ(int chunkZ) {
+        hidecoords$accessibleChunkZ = chunkZ;
     }
 
     @Inject(method = "<init>(Lnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/chunk/light/LightingProvider;Ljava/util/BitSet;Ljava/util/BitSet;)V", at = @At("TAIL"))
-    public void juhc$modifyConstructor(WorldChunk chunk, LightingProvider lightProvider, BitSet skyBits, BitSet blockBits, CallbackInfo ci)
+    public void hidecoords$modifyConstructor(WorldChunk chunk, LightingProvider lightProvider, BitSet skyBits, BitSet blockBits, CallbackInfo ci)
     {
-        juhc$accessibleChunkX = chunk.getPos().x;
-        juhc$accessibleChunkZ = chunk.getPos().z;
+        hidecoords$accessibleChunkX = chunk.getPos().x;
+        hidecoords$accessibleChunkZ = chunk.getPos().z;
     }
 
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/RegistryByteBuf;writeInt(I)Lnet/minecraft/network/PacketByteBuf;", ordinal = 0))
     private int modifyWriteX(int par1)
     {
-        return juhc$accessibleChunkX;
+        return hidecoords$accessibleChunkX;
     }
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/RegistryByteBuf;writeInt(I)Lnet/minecraft/network/PacketByteBuf;", ordinal = 1))
     private int modifyWriteZ(int par1)
     {
-        return juhc$accessibleChunkZ;
+        return hidecoords$accessibleChunkZ;
     }
 }

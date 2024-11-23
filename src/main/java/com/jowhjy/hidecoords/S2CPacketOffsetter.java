@@ -3,6 +3,9 @@ package com.jowhjy.hidecoords;
 import com.jowhjy.hidecoords.mixin.ChunkDeltaUpdateS2CPacketAccessor;
 import com.jowhjy.hidecoords.util.HasAccessiblePos;
 import com.mojang.datafixers.util.Pair;
+import eu.pb4.polymer.core.impl.interfaces.EntityAttachedPacket;
+import eu.pb4.polymer.core.impl.interfaces.PossiblyInitialPacket;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.Entity;
@@ -33,6 +36,21 @@ public class S2CPacketOffsetter {
 
 
     public static <T extends PacketListener> Packet<?> offsetPacket(Packet<T> packet, Offset offset, World world) {
+
+        var newPacket = offsetPacketByType(packet, offset, world);
+        if (FabricLoader.getInstance().isModLoaded("polymer-core")) {
+            if (packet instanceof EntityAttachedPacket eap) {
+                ((EntityAttachedPacket) newPacket).polymer$setEntity(eap.polymer$getEntity());
+            }
+            if (packet instanceof PossiblyInitialPacket pip && pip.polymer$getInitial())
+            {
+                ((PossiblyInitialPacket)newPacket).polymer$setInitial();
+            }
+        }
+        return newPacket;
+    }
+
+    public static <T extends PacketListener> Packet<?> offsetPacketByType(Packet<T> packet, Offset offset, World world) {
 
         PacketType<? extends Packet<T>> packetType = packet.getPacketId();
 
@@ -108,8 +126,8 @@ public class S2CPacketOffsetter {
             ChunkPos chunkPos = new ChunkPos(typedPacket.getChunkX(), typedPacket.getChunkZ());
             ChunkPos newChunkPos = offset(chunkPos, offset);
 
-            ((HasAccessiblePos)typedPacket).juhc$setChunkX(newChunkPos.x);
-            ((HasAccessiblePos)typedPacket).juhc$setChunkZ(newChunkPos.z);
+            ((HasAccessiblePos)typedPacket).hidecoords$setChunkX(newChunkPos.x);
+            ((HasAccessiblePos)typedPacket).hidecoords$setChunkZ(newChunkPos.z);
 
             return typedPacket;
         }
@@ -121,8 +139,8 @@ public class S2CPacketOffsetter {
             ChunkDeltaUpdateS2CPacket typedPacket = (ChunkDeltaUpdateS2CPacket) packet;
             ChunkSectionPos oldSectionPos = ((ChunkDeltaUpdateS2CPacketAccessor)typedPacket).getSectionPos();
             ChunkSectionPos newSectionPos = ChunkSectionPos.from(offset(oldSectionPos.toChunkPos(), offset), oldSectionPos.getSectionY());
-            ((HasAccessiblePos)typedPacket).juhc$setChunkX(newSectionPos.getX());
-            ((HasAccessiblePos)typedPacket).juhc$setChunkZ(newSectionPos.getZ());
+            ((HasAccessiblePos)typedPacket).hidecoords$setChunkX(newSectionPos.getX());
+            ((HasAccessiblePos)typedPacket).hidecoords$setChunkZ(newSectionPos.getZ());
             return typedPacket;
         }
         if (packetType.equals(PlayPackets.LEVEL_PARTICLES)) {
@@ -158,8 +176,8 @@ public class S2CPacketOffsetter {
         if (packetType.equals(PlayPackets.LIGHT_UPDATE)) {
             LightUpdateS2CPacket typedPacket = (LightUpdateS2CPacket) packet;
             ChunkPos newChunkPos = offset(new ChunkPos(typedPacket.getChunkX(), typedPacket.getChunkZ()),offset);
-            ((HasAccessiblePos)typedPacket).juhc$setChunkX(newChunkPos.x);
-            ((HasAccessiblePos)typedPacket).juhc$setChunkZ(newChunkPos.z);
+            ((HasAccessiblePos)typedPacket).hidecoords$setChunkX(newChunkPos.x);
+            ((HasAccessiblePos)typedPacket).hidecoords$setChunkZ(newChunkPos.z);
             return typedPacket;
         }
         if (packetType.equals(PlayPackets.SET_CHUNK_CACHE_CENTER)) {
@@ -222,11 +240,10 @@ public class S2CPacketOffsetter {
                 DataTracker.SerializedEntry<?> newEntry = new DataTracker.SerializedEntry<>(entry.id(), (TrackedDataHandler<Object>) entry.handler(), offsetData(entry.value(), offset));
                 newTrackedValues.add(newEntry);
             }
+
             return new EntityTrackerUpdateS2CPacket(typedPacket.id(), newTrackedValues);
 
         }
-
-
 
 
 
