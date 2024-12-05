@@ -8,12 +8,10 @@ import eu.pb4.polymer.core.impl.interfaces.PossiblyInitialPacket;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LodestoneTrackerComponent;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandler;
-import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -52,7 +50,7 @@ public class S2CPacketOffsetter {
 
     public static <T extends PacketListener> Packet<?> offsetPacketByType(Packet<T> packet, Offset offset, World world) {
 
-        PacketType<? extends Packet<T>> packetType = packet.getPacketId();
+        PacketType<? extends Packet<T>> packetType = packet.getPacketType();
 
         if (packetType.equals(PlayPackets.BUNDLE)) {
             BundleS2CPacket bundleS2CPacket = (BundleS2CPacket) packet;
@@ -145,7 +143,7 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.LEVEL_PARTICLES)) {
             ParticleS2CPacket typedPacket = (ParticleS2CPacket) packet;
-            return new ParticleS2CPacket(typedPacket.getParameters(), typedPacket.isLongDistance(), offsetX(typedPacket.getX(), offset), typedPacket.getY(), offsetZ(typedPacket.getZ(), offset), typedPacket.getOffsetX(), typedPacket.getOffsetY(), typedPacket.getOffsetZ(), typedPacket.getSpeed(), typedPacket.getCount());
+            return new ParticleS2CPacket(typedPacket.getParameters(),typedPacket.shouldForceSpawn(), typedPacket.isImportant(), offsetX(typedPacket.getX(), offset), typedPacket.getY(), offsetZ(typedPacket.getZ(), offset), typedPacket.getOffsetX(), typedPacket.getOffsetY(), typedPacket.getOffsetZ(), typedPacket.getSpeed(), typedPacket.getCount());
         }
         if (packetType.equals(PlayPackets.SOUND)) {
             PlaySoundS2CPacket typedPacket = (PlaySoundS2CPacket) packet;
@@ -160,10 +158,7 @@ public class S2CPacketOffsetter {
         if (packetType.equals(PlayPackets.MOVE_VEHICLE_S2C)) {
             VehicleMoveS2CPacket typedPacket = (VehicleMoveS2CPacket) packet;
 
-            Entity dummyEntity = new ArmorStandEntity(world, offsetX(typedPacket.getX(),offset), typedPacket.getY(),offsetZ(typedPacket.getZ(),offset));
-            dummyEntity.setAngles(typedPacket.getYaw(),typedPacket.getPitch());
-
-            return new VehicleMoveS2CPacket(dummyEntity);
+            return new VehicleMoveS2CPacket(offset(typedPacket.position(),offset), typedPacket.yaw(), typedPacket.pitch());
         }
         if (packetType.equals(PlayPackets.SET_DEFAULT_SPAWN_POSITION)) {
             PlayerSpawnPositionS2CPacket typedPacket = (PlayerSpawnPositionS2CPacket) packet;

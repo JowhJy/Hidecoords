@@ -80,7 +80,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         }
 
         Packet<?> newPacket = S2CPacketOffsetter.offsetPacket(packet, hidecoords$coordOffset, this.getPlayer().getWorld());
-        if (PACKETS_WORLD_BORDER.contains(newPacket.getPacketId()))
+        if (PACKETS_WORLD_BORDER.contains(newPacket.getPacketType()))
         {
             newPacket = WorldBorderObfuscator.translate(newPacket, hidecoords$coordOffset,this.getPlayer());
         }

@@ -4,8 +4,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LodestoneTrackerComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.listener.PacketListener;
@@ -24,16 +22,13 @@ import java.util.Optional;
 public class C2SPacketOffsetter {
     public static <T extends PacketListener> Packet<ServerPlayPacketListener> offsetPacket(Packet<T> packet, Offset offset) {
 
-        PacketType<? extends Packet<T>> packetType = packet.getPacketId();
+        PacketType<? extends Packet<T>> packetType = packet.getPacketType();
 
         if (packetType.equals(PlayPackets.MOVE_VEHICLE_C2S))
         {
             VehicleMoveC2SPacket typedPacket = (VehicleMoveC2SPacket) packet;
 
-            Entity dummyEntity = new ArmorStandEntity(null, unoffsetX(typedPacket.getX(),offset), typedPacket.getY(),unoffsetZ(typedPacket.getZ(),offset));
-            dummyEntity.setAngles(typedPacket.getYaw(),typedPacket.getPitch());
-
-            return new VehicleMoveC2SPacket(dummyEntity);
+            return new VehicleMoveC2SPacket(unoffset(typedPacket.position(),offset), typedPacket.yaw(), typedPacket.pitch(), typedPacket.onGround());
 
         }
         if (packetType.equals(PlayPackets.PLAYER_ACTION))

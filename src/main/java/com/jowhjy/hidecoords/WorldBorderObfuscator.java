@@ -75,7 +75,7 @@ public class WorldBorderObfuscator {
                 (seenWalls.contains(Wall.Z_POSITIVE) && seenWalls.contains(Wall.Z_NEGATIVE))) {
             // If the player can see opposing walls, or obfuscation is disabled, we should just send the complete
             // offsetted border. No diameter change.
-            if (packet.getPacketId().equals(PlayPackets.INITIALIZE_BORDER)) {
+            if (packet.getPacketType().equals(PlayPackets.INITIALIZE_BORDER)) {
                 WorldBorderInitializeS2CPacket typedPacket = (WorldBorderInitializeS2CPacket)(packet);
                 long l = typedPacket.getSizeLerpTime();
                 if (l > 0L) {
@@ -88,7 +88,7 @@ public class WorldBorderObfuscator {
                 dummyWorldBorder.setWarningTime(typedPacket.getWarningTime());
                 dummyWorldBorder.setCenter(typedPacket.getCenterX() + offset.getX() * scaleFactor, typedPacket.getCenterZ() + offset.getZ() * scaleFactor);
                 return new WorldBorderInitializeS2CPacket(dummyWorldBorder);
-            } else if (packet.getPacketId().equals(PlayPackets.SET_BORDER_CENTER)) {
+            } else if (packet.getPacketType().equals(PlayPackets.SET_BORDER_CENTER)) {
                 WorldBorderCenterChangedS2CPacket typedPacket = (WorldBorderCenterChangedS2CPacket)(packet);
                 dummyWorldBorder.setCenter(typedPacket.getCenterX() + offset.getX() * scaleFactor, typedPacket.getCenterZ() + offset.getZ() * scaleFactor);
                 return new WorldBorderCenterChangedS2CPacket(dummyWorldBorder);
@@ -130,7 +130,7 @@ public class WorldBorderObfuscator {
             centerX = centerZ = 0.0;
         }
 
-        if (packet.getPacketId().equals(PlayPackets.INITIALIZE_BORDER)) {
+        if (packet.getPacketType().equals(PlayPackets.INITIALIZE_BORDER)) {
             var typedPacket = (WorldBorderInitializeS2CPacket)(packet);
             long l = typedPacket.getSizeLerpTime();
             if (l > 0L) {
@@ -144,11 +144,11 @@ public class WorldBorderObfuscator {
             dummyWorldBorder.setCenter(centerX * scaleFactor,  centerZ * scaleFactor);
             return new WorldBorderInitializeS2CPacket(dummyWorldBorder);
         }
-        if (packet.getPacketId().equals(PlayPackets.SET_BORDER_CENTER)) {
+        if (packet.getPacketType().equals(PlayPackets.SET_BORDER_CENTER)) {
             dummyWorldBorder.setCenter(centerX * scaleFactor,  centerZ * scaleFactor);
             return new WorldBorderCenterChangedS2CPacket(dummyWorldBorder);
         }
-        if (packet.getPacketId().equals(PlayPackets.SET_BORDER_LERP_SIZE)) {
+        if (packet.getPacketType().equals(PlayPackets.SET_BORDER_LERP_SIZE)) {
             var typedPacket = (WorldBorderInterpolateSizeS2CPacket)(packet);
             long l = typedPacket.getSizeLerpTime();
             if (l > 0L) {
@@ -158,7 +158,7 @@ public class WorldBorderObfuscator {
             }
             return new WorldBorderInterpolateSizeS2CPacket(dummyWorldBorder);
         }
-        if (packet.getPacketId().equals(PlayPackets.SET_BORDER_SIZE)) {
+        if (packet.getPacketType().equals(PlayPackets.SET_BORDER_SIZE)) {
             dummyWorldBorder.setSize(diameter);
             return new WorldBorderSizeChangedS2CPacket(dummyWorldBorder);
         }
