@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.BitSet;
 
 @Mixin(ChunkDataS2CPacket.class)
-public class ChunkDataS2CPacketMixin implements HasAccessiblePos {
+public abstract class ChunkDataS2CPacketMixin implements HasAccessiblePos {
 
     @Unique int hidecoords$accessibleChunkX;
     @Unique int hidecoords$accessibleChunkZ;

@@ -70,7 +70,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
 
     }
 
-    @Override
+    /*@Override
     public void send(Packet<?> packet, @Nullable PacketCallbacks callbacks)
     {
         //no offset if gamerule off
@@ -86,6 +86,6 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         }
 
         super.send(newPacket, callbacks);
-    }
+    }*/
 
 }

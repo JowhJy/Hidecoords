@@ -2,6 +2,7 @@ package com.jowhjy.hidecoords;
 
 import com.jowhjy.hidecoords.mixin.ChunkDeltaUpdateS2CPacketAccessor;
 import com.jowhjy.hidecoords.util.HasAccessiblePos;
+import com.jowhjy.hidecoords.util.IChunkDeltaUpdateS2CPacketMixin;
 import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.impl.interfaces.EntityAttachedPacket;
 import eu.pb4.polymer.core.impl.interfaces.PossiblyInitialPacket;
@@ -51,6 +52,7 @@ public class S2CPacketOffsetter {
     public static <T extends PacketListener> Packet<?> offsetPacketByType(Packet<T> packet, Offset offset, World world) {
 
         PacketType<? extends Packet<T>> packetType = packet.getPacketType();
+        //System.out.println(packetType);
 
         if (packetType.equals(PlayPackets.BUNDLE)) {
             BundleS2CPacket bundleS2CPacket = (BundleS2CPacket) packet;
@@ -137,9 +139,7 @@ public class S2CPacketOffsetter {
             ChunkDeltaUpdateS2CPacket typedPacket = (ChunkDeltaUpdateS2CPacket) packet;
             ChunkSectionPos oldSectionPos = ((ChunkDeltaUpdateS2CPacketAccessor)typedPacket).getSectionPos();
             ChunkSectionPos newSectionPos = ChunkSectionPos.from(offset(oldSectionPos.toChunkPos(), offset), oldSectionPos.getSectionY());
-            ((HasAccessiblePos)typedPacket).hidecoords$setChunkX(newSectionPos.getX());
-            ((HasAccessiblePos)typedPacket).hidecoords$setChunkZ(newSectionPos.getZ());
-            return typedPacket;
+            return new ChunkDeltaUpdateS2CPacket(newSectionPos, ((IChunkDeltaUpdateS2CPacketMixin)typedPacket).hideCoordinates$getRememberedPositions(), ((IChunkDeltaUpdateS2CPacketMixin)typedPacket).hideCoordinates$getRememberedChunkSection());
         }
         if (packetType.equals(PlayPackets.LEVEL_PARTICLES)) {
             ParticleS2CPacket typedPacket = (ParticleS2CPacket) packet;
@@ -237,8 +237,26 @@ public class S2CPacketOffsetter {
             }
 
             return new EntityTrackerUpdateS2CPacket(typedPacket.id(), newTrackedValues);
-
         }
+        if (packetType.equals(PlayPackets.RESPAWN)) {
+            PlayerRespawnS2CPacket typedPacket = (PlayerRespawnS2CPacket) packet;
+            CommonPlayerSpawnInfo oldCommonPlayerSpawnInfo = typedPacket.commonPlayerSpawnInfo();
+            Optional<GlobalPos> oldLastDeathLocation = oldCommonPlayerSpawnInfo.lastDeathLocation();
+            Optional<GlobalPos> newLastDeathLocation = oldLastDeathLocation.map(pos -> offset(pos,offset));
+            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.prevGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
+            return new PlayerRespawnS2CPacket(newCommonPlayerSpawnInfo, typedPacket.flag());
+        }
+        if (packetType.equals(PlayPackets.LOGIN)) {
+            GameJoinS2CPacket typedPacket = (GameJoinS2CPacket) packet;
+            CommonPlayerSpawnInfo oldCommonPlayerSpawnInfo = typedPacket.commonPlayerSpawnInfo();
+            Optional<GlobalPos> oldLastDeathLocation = oldCommonPlayerSpawnInfo.lastDeathLocation();
+            Optional<GlobalPos> newLastDeathLocation = oldLastDeathLocation.map(pos -> offset(pos,offset));
+            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.prevGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
+            return new GameJoinS2CPacket(typedPacket.playerEntityId(), typedPacket.hardcore(), typedPacket.dimensionIds(), typedPacket.maxPlayers(), typedPacket.viewDistance(), typedPacket.simulationDistance(), typedPacket.reducedDebugInfo(), typedPacket.showDeathScreen(), typedPacket.doLimitedCrafting(), newCommonPlayerSpawnInfo, typedPacket.enforcesSecureChat());
+        }
+
+        //if (!(packetType.equals(PlayPackets.SET_BORDER_CENTER) || packetType.equals(PlayPackets.SET_BORDER_SIZE) || packetType.equals(PlayPackets.MOVE_ENTITY_POS)|| packetType.equals(PlayPackets.ENTITY_POSITION_SYNC)|| packetType.equals(PlayPackets.ROTATE_HEAD)|| packetType.equals(PlayPackets.SET_ENTITY_MOTION)|| packetType.equals(PlayPackets.MOVE_ENTITY_POS_ROT)))
+            //System.out.println(packet);
 
 
 
