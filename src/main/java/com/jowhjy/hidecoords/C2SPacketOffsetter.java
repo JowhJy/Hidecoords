@@ -95,6 +95,12 @@ public class C2SPacketOffsetter {
 
             return new UpdateSignC2SPacket(unoffset(typedPacket.getPos(),offset), typedPacket.isFront(), typedPacket.getText()[0], typedPacket.getText()[1], typedPacket.getText()[2], typedPacket.getText()[3]);
         }
+        if (packetType.equals(PlayPackets.PICK_ITEM_FROM_BLOCK))
+        {
+            PickItemFromBlockC2SPacket typedPacket = (PickItemFromBlockC2SPacket) packet;
+
+            return new PickItemFromBlockC2SPacket(unoffset(typedPacket.pos(),offset), typedPacket.includeData());
+        }
 
 
         return (Packet<ServerPlayPacketListener>) packet;
