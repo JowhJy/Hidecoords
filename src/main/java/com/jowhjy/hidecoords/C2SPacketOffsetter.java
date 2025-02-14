@@ -89,6 +89,12 @@ public class C2SPacketOffsetter {
 
             return new ClickSlotC2SPacket(typedPacket.getSyncId(), typedPacket.getRevision(), typedPacket.getSlot(), typedPacket.getButton(),typedPacket.getActionType(),newStack, newInt2ObjectMap);
         }
+        if (packetType.equals(PlayPackets.SIGN_UPDATE))
+        {
+            UpdateSignC2SPacket typedPacket = (UpdateSignC2SPacket) packet;
+
+            return new UpdateSignC2SPacket(unoffset(typedPacket.getPos(),offset), typedPacket.isFront(), typedPacket.getText()[0], typedPacket.getText()[1], typedPacket.getText()[2], typedPacket.getText()[3]);
+        }
 
 
         return (Packet<ServerPlayPacketListener>) packet;
