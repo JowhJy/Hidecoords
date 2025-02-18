@@ -1,6 +1,6 @@
 package com.jowhjy.hidecoords.mixin;
 
-import com.jowhjy.hidecoords.util.HasAccessiblePos;
+import com.jowhjy.hidecoords.util.HasAccessibleChunkPos;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.BitSet;
 
 @Mixin(ChunkDataS2CPacket.class)
-public abstract class ChunkDataS2CPacketMixin implements HasAccessiblePos {
+public abstract class ChunkDataS2CPacketMixin implements HasAccessibleChunkPos {
 
     @Unique int hidecoords$accessibleChunkX;
     @Unique int hidecoords$accessibleChunkZ;

@@ -1,6 +1,5 @@
 package com.jowhjy.hidecoords.mixin;
 
-import com.jowhjy.hidecoords.util.HasAccessiblePos;
 import com.jowhjy.hidecoords.util.IChunkDeltaUpdateS2CPacketMixin;
 import it.unimi.dsi.fastutil.shorts.ShortSet;
 import net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket;
@@ -9,7 +8,6 @@ import net.minecraft.world.chunk.ChunkSection;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChunkDeltaUpdateS2CPacket.class)

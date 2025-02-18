@@ -1,21 +1,18 @@
 package com.jowhjy.hidecoords.mixin;
 
-import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
-import com.jowhjy.hidecoords.WorldBorderObfuscator;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
-import com.jowhjy.hidecoords.S2CPacketOffsetter;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.PacketCallbacks;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.PacketType;
 import net.minecraft.network.packet.PlayPackets;
+import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -41,6 +38,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
 
     @Shadow public abstract ServerPlayerEntity getPlayer();
 
+    @Shadow private double lastTickX;
     @Unique
     Offset hidecoords$coordOffset;
 

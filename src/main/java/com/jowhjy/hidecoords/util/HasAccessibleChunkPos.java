@@ -2,7 +2,7 @@ package com.jowhjy.hidecoords.util;
 
 import org.spongepowered.asm.mixin.Unique;
 
-public interface HasAccessiblePos {
+public interface HasAccessibleChunkPos {
 
     @Unique
     void hidecoords$setChunkX(int chunkX);
