@@ -1,1 +1,0 @@
-execute as @a[tag=inchallenge,tag=!success,scores={vaults=15..}] run function uhclifechallenge:challenges/complete

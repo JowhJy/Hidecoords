@@ -1,1 +1,0 @@
-execute as @a[x=0,y=64,z=0,distance=40000..,tag=inchallenge,tag=!success] run function uhclifechallenge:challenges/complete

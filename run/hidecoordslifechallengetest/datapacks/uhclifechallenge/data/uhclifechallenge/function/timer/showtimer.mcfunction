@@ -1,2 +1,0 @@
-title @a times 0 1 0
-title @a actionbar ["",{"score":{"name":"#timer_hours","objective":"uhclc"},"color":"dark_green"},{"text":":","color":"dark_green"},{"score":{"name":"#timer_minutes","objective":"uhclc"},"color":"dark_green"},{"text":":","color":"dark_green"},{"score":{"name":"#timer_seconds","objective":"uhclc"},"color":"dark_green"},{"text":":","color":"dark_green"},{"score":{"name":"#timer_ticks","objective":"uhclc"},"color":"dark_green"}]

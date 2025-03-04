@@ -1,1 +1,0 @@
-give @a[tag=inchallenge] juhc:ender_ear

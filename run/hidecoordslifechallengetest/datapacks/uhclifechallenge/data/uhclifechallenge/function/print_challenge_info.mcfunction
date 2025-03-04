@@ -1,1 +1,0 @@
-$tellraw @s ["",{"text":"$(number) ","color":"green","hoverEvent":{"action":"show_text","contents":$(description)}},{"text":$(title),"bold":true,"color":"green","hoverEvent":{"action":"show_text","contents":$(description)}}]

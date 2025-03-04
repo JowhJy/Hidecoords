@@ -1,1 +1,0 @@
-scoreboard objectives add vaults minecraft.used:minecraft.ominous_trial_key
