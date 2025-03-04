@@ -7,7 +7,8 @@ Credit also goes to [Patbox](https://github.com/patbox) for a small sample of co
 Features
 ---
 * Players' coordinates are offset so that the location they entered the current world (join, teleport, portal or respawn) is shown to them as 0, 0.
-* Admins can use /coordoffset get to find their own offset.
+* Admins can use `/coordoffset get` to find their own offset.
+* Admins can use `/coordoffset set [pos]` to change their own offset such that the specified pos is in the 0,0 chunk for them, or `/coordoffset set none` to disable the offset.
 * Any worldborder wall is only sent to players who can see it. This is to prevent client-side mods from instantly figuring out the offset from world border center information.
 
 
