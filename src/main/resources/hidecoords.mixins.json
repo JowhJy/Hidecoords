@@ -12,8 +12,10 @@
     "LightUpdateS2CPacketMixin",
     "PlayerManagerMixin",
     "PlayerMoveC2SPacketAccessor",
+    "ServerChunkLoadingManagerAccessor",
     "ServerPlayerEntityMixin",
-    "ServerPlayNetworkHandlerMixin"
+    "ServerPlayNetworkHandlerMixin",
+    "ServerWorldAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

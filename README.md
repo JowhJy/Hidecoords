@@ -1,6 +1,7 @@
 Hide Coordinates
 ================
 Server-side Fabric mod to prevent sending real coordinates to the client. Based on and partly copied from the Spigot version CoordinateOffset by [Joshua Prince](https://github.com/joshuaprince).
+Credit also goes to [Patbox](https://github.com/patbox) for a small sample of code I used from Polymer!
 
 
 Features

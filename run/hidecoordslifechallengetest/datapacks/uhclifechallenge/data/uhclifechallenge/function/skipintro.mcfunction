@@ -1,0 +1,1 @@
+scoreboard players set #intro uhclc 899

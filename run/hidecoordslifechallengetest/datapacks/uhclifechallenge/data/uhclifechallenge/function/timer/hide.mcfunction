@@ -1,0 +1,1 @@
+scoreboard players set #timershow uhclc 0

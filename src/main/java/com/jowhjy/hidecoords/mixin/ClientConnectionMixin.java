@@ -5,6 +5,7 @@ import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.C2SPacketOffsetter;
 import com.jowhjy.hidecoords.S2CPacketOffsetter;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
+import com.jowhjy.hidecoords.util.IServerPlayerEntityMixin;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.listener.PacketListener;
@@ -38,7 +39,7 @@ public abstract class ClientConnectionMixin {
 
         if (listener instanceof ServerPlayNetworkHandler serverPlayNetworkHandler) {
             //dont offset if gamerule off
-            if (!serverPlayNetworkHandler.getPlayer().getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE)) return;
+            if (!((IServerPlayerEntityMixin)serverPlayNetworkHandler.getPlayer()).juhc$shouldOffset()) return;
 
             Offset offset = ((HasCoordOffset)serverPlayNetworkHandler).hidecoords$getCoordOffset();
             Packet<ServerPlayPacketListener> newPacket = C2SPacketOffsetter.offsetPacket(packet, offset);
@@ -49,7 +50,7 @@ public abstract class ClientConnectionMixin {
     @ModifyVariable(method = "sendInternal", at = @At("HEAD"), argsOnly = true)
     public Packet<?> juhc$offsetOutgoingPacket(Packet<?> packet) {
         if (this.packetListener instanceof  ServerPlayNetworkHandler serverPlayNetworkHandler) {
-            if (!serverPlayNetworkHandler.getPlayer().getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE)) return packet;
+            if (!((IServerPlayerEntityMixin)serverPlayNetworkHandler.getPlayer()).juhc$shouldOffset()) return packet;
             Offset offset = ((HasCoordOffset) serverPlayNetworkHandler).hidecoords$getCoordOffset();
             return S2CPacketOffsetter.offsetPacket(packet, offset, serverPlayNetworkHandler.getPlayer().getServerWorld());
         }

@@ -3,6 +3,7 @@ package com.jowhjy.hidecoords.mixin;
 import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
+import com.jowhjy.hidecoords.util.IServerPlayerEntityMixin;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -17,14 +18,17 @@ import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayerEntity.class)
-public abstract class ServerPlayerEntityMixin extends PlayerEntity {
+public abstract class ServerPlayerEntityMixin extends PlayerEntity implements IServerPlayerEntityMixin {
 
     @Shadow public ServerPlayNetworkHandler networkHandler;
+
+    @Unique boolean offsetActive = true;
 
     public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
         super(world, pos, yaw, gameProfile);
@@ -42,7 +46,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At("TAIL"))
     public void hidecoords$changeBorderOnTeleport(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir)
     {
-        if (!getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE)) return;
+        if (!juhc$shouldOffset()) return;
         this.networkHandler.sendPacket(new WorldBorderSizeChangedS2CPacket(this.getServerWorld().getWorldBorder()));
         this.networkHandler.sendPacket(new WorldBorderCenterChangedS2CPacket(this.getServerWorld().getWorldBorder()));
     }
@@ -50,9 +54,20 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     public void travel(Vec3d movementInput)
     {
         super.travel(movementInput);
-        if (!getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE)) return;
+        if (!juhc$shouldOffset()) return;
         this.networkHandler.sendPacket(new WorldBorderSizeChangedS2CPacket(this.getServerWorld().getWorldBorder()));
         this.networkHandler.sendPacket(new WorldBorderCenterChangedS2CPacket(this.getServerWorld().getWorldBorder()));
+    }
+
+    @Unique @Override
+    public boolean juhc$shouldOffset()
+    {
+        return offsetActive && this.getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE);
+    }
+    @Unique @Override
+    public void juhc$setShouldOffset(boolean value)
+    {
+        offsetActive = value;
     }
 
 }

@@ -1,0 +1,2 @@
+tellraw @s ["",{"text":"\nWelcome to JUHC's ","color":"green"},{"text":"Life Challenge","color":"yellow"},{"text":". When we start, you'll have exactly ","color":"green"},{"text":"3 hours","color":"yellow"},{"text":" to complete the given challenge - with all of the limitations present on the JUHC server, of course. If you succeed, you'll be awarded an ","color":"green"},{"text":"extra life","color":"yellow"},{"text":" on the main server!","color":"green"}]
+advancement revoke @s only uhclifechallenge:info_general

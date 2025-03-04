@@ -28,5 +28,11 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}"
-  }
+  },
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/server/network/ServerPlayerEntity": ["com/jowhjy/hidecoords/util/IServerPlayerEntityMixin"]
+    }
+  },
+  "accessWidener" : "hidecoords.accesswidener"
 }

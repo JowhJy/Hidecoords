@@ -13,6 +13,8 @@ base {
 loom {
     splitEnvironmentSourceSets()
 
+    accessWidenerPath = file("src/main/resources/hidecoords.accesswidener")
+
     mods {
         "hidecoords" {
             sourceSet sourceSets.main

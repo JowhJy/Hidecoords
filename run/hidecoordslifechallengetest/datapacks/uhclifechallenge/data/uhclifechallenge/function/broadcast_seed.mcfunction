@@ -1,0 +1,1 @@
+$tellraw @s ["",{"text":"The world seed is","color":"green"},{"text":" $(seed)","color":"yellow"},{"text":". During life challenges, coordinates are enabled and using a seed map is allowed!","color":"green"}]

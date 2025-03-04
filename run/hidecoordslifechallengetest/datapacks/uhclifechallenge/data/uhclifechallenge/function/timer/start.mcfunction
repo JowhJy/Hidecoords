@@ -1,0 +1,1 @@
+scoreboard players set #timer_running uhclc 1

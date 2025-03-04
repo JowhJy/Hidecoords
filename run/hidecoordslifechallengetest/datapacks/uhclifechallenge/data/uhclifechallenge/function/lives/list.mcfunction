@@ -1,0 +1,13 @@
+scoreboard players set jo12345ji uhc_lives -1
+scoreboard players set Fabrian12 uhc_lives -1
+scoreboard players set spikey2006 uhc_lives -1
+scoreboard players set JonaFreaky uhc_lives -1
+scoreboard players set KoekieKillertje uhc_lives -1
+scoreboard players set JipVip uhc_lives -1
+scoreboard players set Stino615 uhc_lives -1
+scoreboard players set MonsieurDuck uhc_lives -1
+scoreboard players set AcAdW uhc_lives -1
+scoreboard players set Annemoon uhc_lives 2
+scoreboard players set Mugsels uhc_lives -1
+scoreboard players set ThornsAndRoses4 uhc_lives -1
+scoreboard players set d3ku_skrub uhc_lives -1
