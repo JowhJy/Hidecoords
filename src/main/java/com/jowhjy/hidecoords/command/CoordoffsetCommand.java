@@ -40,7 +40,7 @@ public class CoordoffsetCommand {
         ServerPlayerEntity player = source.getPlayerOrThrow();
         ((IServerPlayerEntityMixin)player).juhc$setShouldOffset(false);
         resendChunks(player);
-        source.sendFeedback(() -> Text.literal("Now sending you true coordinates. Entities will take a while to update."), false);
+        source.sendFeedback(() -> Text.literal("You should now be receiving true coordinates."), false);
         return 1;
     }
 
@@ -54,7 +54,7 @@ public class CoordoffsetCommand {
         Offset newOffset = Offset.zeroAtLocation(pos);
         ServerPlayerEntity player = source.getPlayerOrThrow();
 
-        source.sendFeedback(() -> Text.literal(pos.toShortString() + " is now in the 0,0 chunk for you. Entities will take a while to update."), false);
+        source.sendFeedback(() -> Text.literal(pos.toShortString() + " is now in the 0,0 chunk for you."), false);
 
         player.juhc$setShouldOffset(true);
 
