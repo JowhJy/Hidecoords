@@ -4,8 +4,6 @@ import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.PacketType;
-import net.minecraft.network.packet.PlayPackets;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
@@ -18,21 +16,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Set;
-
 @Mixin(ServerPlayNetworkHandler.class)
 public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkHandler implements HasCoordOffset {
-
-    @Unique
-    private static final Set<PacketType<?>> PACKETS_WORLD_BORDER = Set.of(
-            // These packets are translated in WorldBorderObfuscator, not this file.
-            PlayPackets.INITIALIZE_BORDER,
-            PlayPackets.SET_BORDER_CENTER,
-            PlayPackets.SET_BORDER_LERP_SIZE,
-            PlayPackets.SET_BORDER_SIZE,
-            PlayPackets.SET_BORDER_WARNING_DELAY,
-            PlayPackets.SET_BORDER_WARNING_DISTANCE
-    );
 
     @Shadow public abstract ServerPlayerEntity getPlayer();
 

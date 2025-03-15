@@ -8,6 +8,9 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.minecraft.network.packet.s2c.play.ChunkRenderDistanceCenterS2CPacket;
+import net.minecraft.network.packet.s2c.play.WorldBorderCenterChangedS2CPacket;
+import net.minecraft.network.packet.s2c.play.WorldBorderInitializeS2CPacket;
+import net.minecraft.network.packet.s2c.play.WorldBorderSizeChangedS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.world.GameRules;
@@ -31,6 +34,8 @@ public class Hidecoords implements ModInitializer {
 
         var world = player.getWorld();
         var chunksLoadingManagerAccess = ((ServerChunkLoadingManagerAccessor) ((ServerChunkManager) player.getWorld().getChunkManager()).chunkLoadingManager);
+
+        player.networkHandler.sendPacket(new WorldBorderInitializeS2CPacket(world.getWorldBorder()));
 
         try {
             for (var e : ((ServerWorldAccessor) player.getWorld()).hidecoords$getEntityManager().getLookup().iterate()) {
