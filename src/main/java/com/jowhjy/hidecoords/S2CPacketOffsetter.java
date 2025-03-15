@@ -8,14 +8,12 @@ import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.impl.interfaces.EntityAttachedPacket;
 import eu.pb4.polymer.core.impl.interfaces.PossiblyInitialPacket;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.LodestoneTrackerComponent;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandler;
-import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -323,10 +321,15 @@ public class S2CPacketOffsetter {
         ItemStack result = itemStack.copy();
 
         if (itemStack.isOf(Items.COMPASS)) {
-            LodestoneTrackerComponent lodestoneComponent = itemStack.getComponents().get(DataComponentTypes.LODESTONE_TRACKER);
-            if (lodestoneComponent == null || lodestoneComponent.target().isEmpty()) return itemStack;
-            LodestoneTrackerComponent newLodestoneComponent = new LodestoneTrackerComponent(Optional.of(offset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
-            result.set(DataComponentTypes.LODESTONE_TRACKER, newLodestoneComponent);
+            itemStack.getComponents().forEach(componentMapEntry -> {
+                if (!(componentMapEntry.value() instanceof LodestoneTrackerComponent lodestoneComponent)) return;
+
+                ComponentType<LodestoneTrackerComponent> test = (ComponentType<LodestoneTrackerComponent>) componentMapEntry.type();
+
+                if (lodestoneComponent.target().isEmpty()) return;
+                LodestoneTrackerComponent newLodestoneComponent = new LodestoneTrackerComponent(Optional.of(offset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
+                result.set(test, newLodestoneComponent);
+            });
         }
         return result;
     }

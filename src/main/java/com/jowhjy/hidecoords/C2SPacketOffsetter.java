@@ -3,7 +3,7 @@ package com.jowhjy.hidecoords;
 import com.jowhjy.hidecoords.mixin.PlayerMoveC2SPacketAccessor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -105,6 +105,13 @@ public class C2SPacketOffsetter {
             return new PickItemFromBlockC2SPacket(unoffset(typedPacket.pos(),offset), typedPacket.includeData());
         }
 
+        if (packetType.equals(PlayPackets.SET_STRUCTURE_BLOCK))
+        {
+            UpdateStructureBlockC2SPacket typedPacket = (UpdateStructureBlockC2SPacket) packet;
+
+            return new UpdateStructureBlockC2SPacket(unoffset(typedPacket.getPos(),offset), typedPacket.getAction(), typedPacket.getMode(), typedPacket.getTemplateName(),typedPacket.getOffset(),typedPacket.getSize(),typedPacket.getMirror(),typedPacket.getRotation(),typedPacket.getMetadata(),typedPacket.shouldIgnoreEntities(),typedPacket.shouldShowAir(),typedPacket.shouldShowBoundingBox(),typedPacket.getIntegrity(),typedPacket.getSeed());
+        }
+
 
         return (Packet<ServerPlayPacketListener>) packet;
     }
@@ -131,10 +138,15 @@ public class C2SPacketOffsetter {
         ItemStack result = itemStack.copy();
 
         if (itemStack.isOf(Items.COMPASS)) {
-            LodestoneTrackerComponent lodestoneComponent = itemStack.getComponents().get(DataComponentTypes.LODESTONE_TRACKER);
-            if (lodestoneComponent == null || lodestoneComponent.target().isEmpty()) return itemStack;
-            LodestoneTrackerComponent newLodestoneComponent = new LodestoneTrackerComponent(Optional.of(unoffset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
-            result.set(DataComponentTypes.LODESTONE_TRACKER, newLodestoneComponent);
+            itemStack.getComponents().forEach(componentMapEntry -> {
+                if (!(componentMapEntry.value() instanceof LodestoneTrackerComponent lodestoneComponent)) return;
+
+                ComponentType<LodestoneTrackerComponent> test = (ComponentType<LodestoneTrackerComponent>) componentMapEntry.type();
+
+                if (lodestoneComponent.target().isEmpty()) return;
+                LodestoneTrackerComponent newLodestoneComponent = new LodestoneTrackerComponent(Optional.of(unoffset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
+                result.set(test, newLodestoneComponent);
+            });
         }
         return result;
     }

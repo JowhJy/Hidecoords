@@ -1,13 +1,11 @@
 package com.jowhjy.hidecoords.mixin;
 
+import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
-import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.PacketType;
 import net.minecraft.network.packet.PlayPackets;
-import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
@@ -42,8 +40,9 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     @Unique
     Offset hidecoords$coordOffset;
 
-    public ServerPlayNetworkHandlerMixin(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData) {
+    public ServerPlayNetworkHandlerMixin(MinecraftServer server, ClientConnection connection, ConnectedClientData clientData, double lastTickX) {
         super(server, connection, clientData);
+        this.lastTickX = lastTickX;
     }
 
     @Unique
@@ -57,6 +56,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     public void hidecoords$setCoordOffset(Offset coordOffset)
     {
         hidecoords$coordOffset = coordOffset;
+        Hidecoords.resendChunks(this.getPlayer());
     }
 
     /** Inject into the constructor to make the offsetPacket
