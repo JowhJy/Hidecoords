@@ -9,6 +9,7 @@
     "ChunkDeltaUpdateS2CPacketAccessor",
     "ChunkDeltaUpdateS2CPacketMixin",
     "ClientConnectionMixin",
+    "EntityShapeContextMixin",
     "LightUpdateS2CPacketMixin",
     "PlayerManagerMixin",
     "PlayerMoveC2SPacketAccessor",
