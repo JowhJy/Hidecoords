@@ -10,7 +10,7 @@ public interface HasCoordOffset {
     }
 
     @Unique
-    default void hidecoords$setCoordOffset(Offset offset) {
+    default void hidecoords$setCoordOffset(Offset offset, boolean resendData) {
 
     }
 }

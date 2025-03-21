@@ -39,7 +39,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements IS
     @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;setServerWorld(Lnet/minecraft/server/world/ServerWorld;)V"))
     public void hidecoords$changeOffsetOnDimensionChange(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir)
     {
-        ((HasCoordOffset)(this.networkHandler)).hidecoords$setCoordOffset(Offset.zeroAtLocation(BlockPos.ofFloored(teleportTarget.position())));
+        ((HasCoordOffset)(this.networkHandler)).hidecoords$setCoordOffset(Offset.zeroAtLocation(BlockPos.ofFloored(teleportTarget.position())), false);
     }
 
     //todo this is very inefficient!

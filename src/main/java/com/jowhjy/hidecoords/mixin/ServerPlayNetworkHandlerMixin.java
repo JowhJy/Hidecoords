@@ -38,10 +38,10 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     }
     @Unique
     @Override
-    public void hidecoords$setCoordOffset(Offset coordOffset)
+    public void hidecoords$setCoordOffset(Offset coordOffset, boolean resendData)
     {
         hidecoords$coordOffset = coordOffset;
-        Hidecoords.resendDataAfterOffsetChange(this.getPlayer());
+        if (resendData) Hidecoords.resendDataAfterOffsetChange(this.getPlayer());
     }
 
     /** Inject into the constructor to make the offsetPacket

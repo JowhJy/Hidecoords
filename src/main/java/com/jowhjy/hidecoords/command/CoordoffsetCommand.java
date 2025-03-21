@@ -51,7 +51,7 @@ public class CoordoffsetCommand {
 
         if (newOffset.equals(((HasCoordOffset) player.networkHandler).hidecoords$getCoordOffset())) return 0;
 
-        ((HasCoordOffset)player.networkHandler).hidecoords$setCoordOffset(Offset.zeroAtLocation(pos));
+        ((HasCoordOffset)player.networkHandler).hidecoords$setCoordOffset(Offset.zeroAtLocation(pos), true);
 
         return 1;
     }
