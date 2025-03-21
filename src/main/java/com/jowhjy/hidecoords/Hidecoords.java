@@ -7,13 +7,11 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
-import net.minecraft.network.packet.s2c.play.ChunkRenderDistanceCenterS2CPacket;
-import net.minecraft.network.packet.s2c.play.WorldBorderCenterChangedS2CPacket;
-import net.minecraft.network.packet.s2c.play.WorldBorderInitializeS2CPacket;
-import net.minecraft.network.packet.s2c.play.WorldBorderSizeChangedS2CPacket;
+import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.WorldProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +28,10 @@ public class Hidecoords implements ModInitializer {
     }
 
     //credit to Patbox (Polymer) for parts of this method!
-    public static void resendChunks(ServerPlayerEntity player) {
+    public static void resendDataAfterOffsetChange(ServerPlayerEntity player) {
 
-        var world = player.getWorld();
+        var world = player.getServerWorld();
         var chunksLoadingManagerAccess = ((ServerChunkLoadingManagerAccessor) ((ServerChunkManager) player.getWorld().getChunkManager()).chunkLoadingManager);
-
-        player.networkHandler.sendPacket(new WorldBorderInitializeS2CPacket(world.getWorldBorder()));
 
         try {
             for (var e : ((ServerWorldAccessor) player.getWorld()).hidecoords$getEntityManager().getLookup().iterate()) {
@@ -49,8 +45,23 @@ public class Hidecoords implements ModInitializer {
             Hidecoords.LOGGER.warn("Failed to reload entities", throwable);
         }
 
+        if (player.getServer() == null) return;
+        var playerManager = player.getServer().getPlayerManager();
+        //some code from respawnPlayer is reused here
+        WorldProperties worldProperties = world.getLevelProperties();
+        player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(player.createCommonPlayerSpawnInfo(world), PlayerRespawnS2CPacket.KEEP_ALL));
+        player.networkHandler
+                .requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
+        player.networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
+        player.networkHandler
+                .sendPacket(new ExperienceBarUpdateS2CPacket(player.experienceProgress, player.totalExperience, player.experienceLevel));
+        playerManager.sendStatusEffects(player);
+        playerManager.sendWorldInfo(player, world);
+        playerManager.sendCommandTree(player);
+        player.onSpawn();
+        player.setHealth(player.getHealth());
+
         player.networkHandler.sendPacket(new ChunkRenderDistanceCenterS2CPacket(player.getChunkPos().x, player.getChunkPos().z));
-        player.requestTeleport(player.getX(),player.getY(),player.getZ());
 
         player.getChunkFilter().forEach((chunkPos) -> {
             var chunk = world.getChunk(chunkPos.x, chunkPos.z);
