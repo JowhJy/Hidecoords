@@ -11,7 +11,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.player.PlayerPosition;
@@ -23,8 +22,6 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.PacketType;
 import net.minecraft.network.packet.PlayPackets;
 import net.minecraft.network.packet.s2c.play.*;
-import net.minecraft.server.network.EntityTrackerEntry;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
@@ -87,16 +84,6 @@ public class S2CPacketOffsetter {
             double z = offsetZ(typedPacket.getZ(), offset);
             Vec3d velocity = new Vec3d(typedPacket.getVelocityX(), typedPacket.getVelocityY(), typedPacket.getVelocityZ());
             return new EntitySpawnS2CPacket(typedPacket.getEntityId(), typedPacket.getUuid(), x, y, z, typedPacket.getPitch(), typedPacket.getYaw(), typedPacket.getEntityType(), typedPacket.getEntityData(), velocity, typedPacket.getHeadYaw());
-        }
-        if (packetType.equals(PlayPackets.ADD_EXPERIENCE_ORB)) {
-            ExperienceOrbSpawnS2CPacket typedPacket = (ExperienceOrbSpawnS2CPacket) packet;
-            double x = offsetX(typedPacket.getX(), offset);
-            double y = typedPacket.getY();
-            double z = offsetZ(typedPacket.getZ(), offset);
-            ExperienceOrbEntity fakeEntity = new ExperienceOrbEntity(world, x, y, z, typedPacket.getExperience());
-            fakeEntity.setId(typedPacket.getEntityId());
-            EntityTrackerEntry fakeEntityTrackerEntry = new EntityTrackerEntry((ServerWorld) world, fakeEntity, 0, false, null);
-            return new ExperienceOrbSpawnS2CPacket(fakeEntity, fakeEntityTrackerEntry);
         }
         if (packetType.equals(PlayPackets.PLAYER_POSITION)) {
             PlayerPositionLookS2CPacket typedPacket = (PlayerPositionLookS2CPacket) packet;
@@ -234,12 +221,12 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.CONTAINER_SET_CONTENT)) {
             InventoryS2CPacket typedPacket = (InventoryS2CPacket) packet;
-            List<ItemStack> contents = typedPacket.getContents();
+            List<ItemStack> contents = typedPacket.contents();
             DefaultedList<ItemStack> newContents = DefaultedList.ofSize(contents.size(), ItemStack.EMPTY);
             for (int i = 0; i < contents.size(); i++)
                 newContents.set(i, offset(contents.get(i),offset));
 
-            return new InventoryS2CPacket(typedPacket.getSyncId(), typedPacket.getRevision(), newContents, offset(typedPacket.getCursorStack(),offset));
+            return new InventoryS2CPacket(typedPacket.syncId(), typedPacket.revision(), newContents, offset(typedPacket.cursorStack(),offset));
         }
         if (packetType.equals((PlayPackets.SET_ENTITY_DATA))) {
             EntityTrackerUpdateS2CPacket typedPacket = (EntityTrackerUpdateS2CPacket) packet;
@@ -259,7 +246,7 @@ public class S2CPacketOffsetter {
             CommonPlayerSpawnInfo oldCommonPlayerSpawnInfo = typedPacket.commonPlayerSpawnInfo();
             Optional<GlobalPos> oldLastDeathLocation = oldCommonPlayerSpawnInfo.lastDeathLocation();
             Optional<GlobalPos> newLastDeathLocation = oldLastDeathLocation.map(pos -> offset(pos,offset));
-            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.prevGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
+            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.lastGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
             return new PlayerRespawnS2CPacket(newCommonPlayerSpawnInfo, typedPacket.flag());
         }
         if (packetType.equals(PlayPackets.LOGIN)) {
@@ -267,8 +254,16 @@ public class S2CPacketOffsetter {
             CommonPlayerSpawnInfo oldCommonPlayerSpawnInfo = typedPacket.commonPlayerSpawnInfo();
             Optional<GlobalPos> oldLastDeathLocation = oldCommonPlayerSpawnInfo.lastDeathLocation();
             Optional<GlobalPos> newLastDeathLocation = oldLastDeathLocation.map(pos -> offset(pos,offset));
-            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.prevGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
+            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.lastGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
             return new GameJoinS2CPacket(typedPacket.playerEntityId(), typedPacket.hardcore(), typedPacket.dimensionIds(), typedPacket.maxPlayers(), typedPacket.viewDistance(), typedPacket.simulationDistance(), typedPacket.reducedDebugInfo(), typedPacket.showDeathScreen(), typedPacket.doLimitedCrafting(), newCommonPlayerSpawnInfo, typedPacket.enforcesSecureChat());
+        }
+        if (packetType.equals(PlayPackets.SET_PLAYER_INVENTORY)) {
+            SetPlayerInventoryS2CPacket typedPacket = (SetPlayerInventoryS2CPacket) packet;
+            return new SetPlayerInventoryS2CPacket(typedPacket.slot(), offset(typedPacket.contents(), offset));
+        }
+        if (packetType.equals(PlayPackets.SET_CURSOR_ITEM)) {
+            SetCursorItemS2CPacket typedPacket = (SetCursorItemS2CPacket) packet;
+            return new SetCursorItemS2CPacket(offset(typedPacket.contents(), offset));
         }
 
         //if (!(packetType.equals(PlayPackets.SET_BORDER_CENTER) || packetType.equals(PlayPackets.SET_BORDER_SIZE) || packetType.equals(PlayPackets.MOVE_ENTITY_POS)|| packetType.equals(PlayPackets.ENTITY_POSITION_SYNC)|| packetType.equals(PlayPackets.ROTATE_HEAD)|| packetType.equals(PlayPackets.SET_ENTITY_MOTION)|| packetType.equals(PlayPackets.MOVE_ENTITY_POS_ROT)))

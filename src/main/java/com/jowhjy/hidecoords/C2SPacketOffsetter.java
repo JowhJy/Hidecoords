@@ -78,20 +78,6 @@ public class C2SPacketOffsetter {
 
             return new CreativeInventoryActionC2SPacket(typedPacket.slot(), unoffset(typedPacket.stack(),offset));
         }
-        if (packetType.equals((PlayPackets.CONTAINER_CLICK)))
-        {
-            ClickSlotC2SPacket typedPacket = (ClickSlotC2SPacket) packet;
-            ItemStack newStack = unoffset(typedPacket.getStack(),offset);
-
-            Int2ObjectMap<ItemStack> int2ObjectMap = typedPacket.getModifiedStacks();
-            Int2ObjectMap<ItemStack> newInt2ObjectMap = new Int2ObjectOpenHashMap<>();
-
-            for (int j = 0; j < newInt2ObjectMap.size(); j++) {
-                newInt2ObjectMap.put(j, unoffset(int2ObjectMap.get(j),offset));
-            }
-
-            return new ClickSlotC2SPacket(typedPacket.getSyncId(), typedPacket.getRevision(), typedPacket.getSlot(), typedPacket.getButton(),typedPacket.getActionType(),newStack, newInt2ObjectMap);
-        }
         if (packetType.equals(PlayPackets.SIGN_UPDATE))
         {
             UpdateSignC2SPacket typedPacket = (UpdateSignC2SPacket) packet;
@@ -109,7 +95,19 @@ public class C2SPacketOffsetter {
         {
             UpdateStructureBlockC2SPacket typedPacket = (UpdateStructureBlockC2SPacket) packet;
 
-            return new UpdateStructureBlockC2SPacket(unoffset(typedPacket.getPos(),offset), typedPacket.getAction(), typedPacket.getMode(), typedPacket.getTemplateName(),typedPacket.getOffset(),typedPacket.getSize(),typedPacket.getMirror(),typedPacket.getRotation(),typedPacket.getMetadata(),typedPacket.shouldIgnoreEntities(),typedPacket.shouldShowAir(),typedPacket.shouldShowBoundingBox(),typedPacket.getIntegrity(),typedPacket.getSeed());
+            return new UpdateStructureBlockC2SPacket(unoffset(typedPacket.getPos(),offset), typedPacket.getAction(), typedPacket.getMode(), typedPacket.getTemplateName(),typedPacket.getOffset(),typedPacket.getSize(),typedPacket.getMirror(),typedPacket.getRotation(),typedPacket.getMetadata(),typedPacket.shouldIgnoreEntities(),typedPacket.isStrict(), typedPacket.shouldShowAir(),typedPacket.shouldShowBoundingBox(),typedPacket.getIntegrity(),typedPacket.getSeed());
+        }
+        if (packetType.equals(PlayPackets.SET_TEST_BLOCK))
+        {
+            SetTestBlockC2SPacket typedPacket = (SetTestBlockC2SPacket) packet;
+
+            return new SetTestBlockC2SPacket(unoffset(typedPacket.position(),offset), typedPacket.mode(), typedPacket.message());
+        }
+        if (packetType.equals(PlayPackets.TEST_INSTANCE_BLOCK_ACTION))
+        {
+            TestInstanceBlockActionC2SPacket typedPacket = (TestInstanceBlockActionC2SPacket) packet;
+
+            return new TestInstanceBlockActionC2SPacket(unoffset(typedPacket.pos(),offset), typedPacket.action(), typedPacket.data());
         }
 
 
