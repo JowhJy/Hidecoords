@@ -10,6 +10,7 @@ import eu.pb4.polymer.core.impl.interfaces.PossiblyInitialPacket;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.LodestoneTrackerComponent;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandler;
@@ -162,11 +163,6 @@ public class S2CPacketOffsetter {
             PlaySoundS2CPacket typedPacket = (PlaySoundS2CPacket) packet;
 
             return new PlaySoundS2CPacket(typedPacket.getSound(),typedPacket.getCategory(), offsetX(typedPacket.getX(),offset),typedPacket.getY(),offsetZ(typedPacket.getZ(),offset), typedPacket.getVolume(),typedPacket.getPitch(),typedPacket.getSeed());
-        }
-        if (packetType.equals(PlayPackets.SOUND_ENTITY)) {
-            PlaySoundFromEntityS2CPacket typedPacket = (PlaySoundFromEntityS2CPacket) packet;
-
-            return new PlaySoundFromEntityS2CPacket(typedPacket.getSound(),typedPacket.getCategory(), Objects.requireNonNull(world.getEntityById(typedPacket.getEntityId())), typedPacket.getVolume(),typedPacket.getPitch(),typedPacket.getSeed());
         }
         if (packetType.equals(PlayPackets.MOVE_VEHICLE_S2C)) {
             VehicleMoveS2CPacket typedPacket = (VehicleMoveS2CPacket) packet;
