@@ -4,11 +4,13 @@
   "package": "com.jowhjy.hidecoords.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BlockCollisionSpliteratorMixin",
     "BlockEntityUpdateS2CPacketMixin",
     "ChunkDataS2CPacketMixin",
     "ChunkDeltaUpdateS2CPacketAccessor",
     "ChunkDeltaUpdateS2CPacketMixin",
     "ClientConnectionMixin",
+    "EntityPositionS2CPacketMixin",
     "EntityShapeContextMixin",
     "LightUpdateS2CPacketMixin",
     "PlayerManagerMixin",
@@ -16,7 +18,9 @@
     "ServerChunkLoadingManagerAccessor",
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
-    "ServerWorldAccessor"
+    "ServerWorldAccessor",
+    "VehicleMoveC2SPacketMixin",
+    "VehicleMoveS2CPacketMixin"
   ],
   "injectors": {
     "defaultRequire": 1

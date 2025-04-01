@@ -23,7 +23,7 @@ public class PlayerManagerMixin {
     @Redirect(method = "respawnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;copyFrom(Lnet/minecraft/server/network/ServerPlayerEntity;Z)V"))
     public void hidecoords$newOffsetOnRespawn(ServerPlayerEntity instance, ServerPlayerEntity oldPlayer, boolean alive, @Local TeleportTarget teleportTarget)
     {
-        ((HasCoordOffset)(instance.networkHandler)).hidecoords$setCoordOffset(Offset.zeroAtLocation(BlockPos.ofFloored(teleportTarget.position())), true);
+        ((HasCoordOffset)(instance.networkHandler)).hidecoords$setCoordOffset(Offset.zeroAtLocation(BlockPos.ofFloored(teleportTarget.pos())), true);
         instance.copyFrom(oldPlayer, alive);
     }
 }

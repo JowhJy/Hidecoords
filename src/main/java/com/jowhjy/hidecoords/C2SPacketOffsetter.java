@@ -1,6 +1,7 @@
 package com.jowhjy.hidecoords;
 
 import com.jowhjy.hidecoords.mixin.PlayerMoveC2SPacketAccessor;
+import com.jowhjy.hidecoords.util.HasAccessibleCoordinates;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.component.ComponentType;
@@ -23,14 +24,17 @@ import java.util.Optional;
 public class C2SPacketOffsetter {
     public static <T extends PacketListener> Packet<ServerPlayPacketListener> offsetPacket(Packet<T> packet, Offset offset) {
 
-        PacketType<? extends Packet<T>> packetType = packet.getPacketType();
+        PacketType<? extends Packet<T>> packetType = packet.getPacketId();
 
         if (packetType.equals(PlayPackets.MOVE_VEHICLE_C2S))
         {
             VehicleMoveC2SPacket typedPacket = (VehicleMoveC2SPacket) packet;
+            HasAccessibleCoordinates accessibleCoordinatesPacket = (HasAccessibleCoordinates) packet;
 
-            return new VehicleMoveC2SPacket(unoffset(typedPacket.position(),offset), typedPacket.yaw(), typedPacket.pitch(), typedPacket.onGround());
+            accessibleCoordinatesPacket.hidecoords$setX(unoffsetX(typedPacket.getX(), offset));
+            accessibleCoordinatesPacket.hidecoords$setZ(unoffsetZ(typedPacket.getZ(), offset));
 
+            return typedPacket;
         }
         if (packetType.equals(PlayPackets.PLAYER_ACTION))
         {
@@ -41,13 +45,13 @@ public class C2SPacketOffsetter {
         {
             PlayerMoveC2SPacket.Full typedPacket = (PlayerMoveC2SPacket.Full) packet;
             PlayerMoveC2SPacketAccessor packetAccessor = (PlayerMoveC2SPacketAccessor) packet;
-            return new PlayerMoveC2SPacket.Full(unoffsetX(packetAccessor.getX(),offset),packetAccessor.getY(),unoffsetZ(packetAccessor.getZ(),offset),packetAccessor.getYaw(),packetAccessor.getPitch(),typedPacket.isOnGround(), typedPacket.horizontalCollision());
+            return new PlayerMoveC2SPacket.Full(unoffsetX(packetAccessor.getX(),offset),packetAccessor.getY(),unoffsetZ(packetAccessor.getZ(),offset),packetAccessor.getYaw(),packetAccessor.getPitch(),typedPacket.isOnGround());
         }
         if (packetType.equals(PlayPackets.MOVE_PLAYER_POS))
         {
             PlayerMoveC2SPacket.PositionAndOnGround typedPacket = (PlayerMoveC2SPacket.PositionAndOnGround) packet;
             PlayerMoveC2SPacketAccessor packetAccessor = (PlayerMoveC2SPacketAccessor) packet;
-            return new PlayerMoveC2SPacket.PositionAndOnGround(unoffsetX(packetAccessor.getX(),offset),packetAccessor.getY(),unoffsetZ(packetAccessor.getZ(),offset),typedPacket.isOnGround(), typedPacket.horizontalCollision());
+            return new PlayerMoveC2SPacket.PositionAndOnGround(unoffsetX(packetAccessor.getX(),offset),packetAccessor.getY(),unoffsetZ(packetAccessor.getZ(),offset),typedPacket.isOnGround());
         }
         if (packetType.equals(PlayPackets.JIGSAW_GENERATE))
         {
@@ -78,36 +82,32 @@ public class C2SPacketOffsetter {
 
             return new CreativeInventoryActionC2SPacket(typedPacket.slot(), unoffset(typedPacket.stack(),offset));
         }
+        if (packetType.equals((PlayPackets.CONTAINER_CLICK)))
+        {
+            ClickSlotC2SPacket typedPacket = (ClickSlotC2SPacket) packet;
+            ItemStack newStack = unoffset(typedPacket.getStack(),offset);
+
+            Int2ObjectMap<ItemStack> int2ObjectMap = typedPacket.getModifiedStacks();
+            Int2ObjectMap<ItemStack> newInt2ObjectMap = new Int2ObjectOpenHashMap<>();
+
+            for (int j = 0; j < newInt2ObjectMap.size(); j++) {
+                newInt2ObjectMap.put(j, unoffset(int2ObjectMap.get(j),offset));
+            }
+
+            return new ClickSlotC2SPacket(typedPacket.getSyncId(), typedPacket.getRevision(), typedPacket.getSlot(), typedPacket.getButton(),typedPacket.getActionType(),newStack, newInt2ObjectMap);
+        }
         if (packetType.equals(PlayPackets.SIGN_UPDATE))
         {
             UpdateSignC2SPacket typedPacket = (UpdateSignC2SPacket) packet;
 
             return new UpdateSignC2SPacket(unoffset(typedPacket.getPos(),offset), typedPacket.isFront(), typedPacket.getText()[0], typedPacket.getText()[1], typedPacket.getText()[2], typedPacket.getText()[3]);
         }
-        if (packetType.equals(PlayPackets.PICK_ITEM_FROM_BLOCK))
-        {
-            PickItemFromBlockC2SPacket typedPacket = (PickItemFromBlockC2SPacket) packet;
-
-            return new PickItemFromBlockC2SPacket(unoffset(typedPacket.pos(),offset), typedPacket.includeData());
-        }
 
         if (packetType.equals(PlayPackets.SET_STRUCTURE_BLOCK))
         {
             UpdateStructureBlockC2SPacket typedPacket = (UpdateStructureBlockC2SPacket) packet;
 
-            return new UpdateStructureBlockC2SPacket(unoffset(typedPacket.getPos(),offset), typedPacket.getAction(), typedPacket.getMode(), typedPacket.getTemplateName(),typedPacket.getOffset(),typedPacket.getSize(),typedPacket.getMirror(),typedPacket.getRotation(),typedPacket.getMetadata(),typedPacket.shouldIgnoreEntities(),typedPacket.isStrict(), typedPacket.shouldShowAir(),typedPacket.shouldShowBoundingBox(),typedPacket.getIntegrity(),typedPacket.getSeed());
-        }
-        if (packetType.equals(PlayPackets.SET_TEST_BLOCK))
-        {
-            SetTestBlockC2SPacket typedPacket = (SetTestBlockC2SPacket) packet;
-
-            return new SetTestBlockC2SPacket(unoffset(typedPacket.position(),offset), typedPacket.mode(), typedPacket.message());
-        }
-        if (packetType.equals(PlayPackets.TEST_INSTANCE_BLOCK_ACTION))
-        {
-            TestInstanceBlockActionC2SPacket typedPacket = (TestInstanceBlockActionC2SPacket) packet;
-
-            return new TestInstanceBlockActionC2SPacket(unoffset(typedPacket.pos(),offset), typedPacket.action(), typedPacket.data());
+            return new UpdateStructureBlockC2SPacket(unoffset(typedPacket.getPos(),offset), typedPacket.getAction(), typedPacket.getMode(), typedPacket.getTemplateName(),typedPacket.getOffset(),typedPacket.getSize(),typedPacket.getMirror(),typedPacket.getRotation(),typedPacket.getMetadata(),typedPacket.shouldIgnoreEntities(), typedPacket.shouldShowAir(),typedPacket.shouldShowBoundingBox(),typedPacket.getIntegrity(),typedPacket.getSeed());
         }
 
 

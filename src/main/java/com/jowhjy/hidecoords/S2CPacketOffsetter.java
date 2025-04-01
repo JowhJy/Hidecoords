@@ -3,6 +3,7 @@ package com.jowhjy.hidecoords;
 import com.jowhjy.hidecoords.mixin.ChunkDeltaUpdateS2CPacketAccessor;
 import com.jowhjy.hidecoords.util.HasAccessibleBlockPos;
 import com.jowhjy.hidecoords.util.HasAccessibleChunkPos;
+import com.jowhjy.hidecoords.util.HasAccessibleCoordinates;
 import com.jowhjy.hidecoords.util.IChunkDeltaUpdateS2CPacketMixin;
 import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.impl.interfaces.EntityAttachedPacket;
@@ -10,11 +11,10 @@ import eu.pb4.polymer.core.impl.interfaces.PossiblyInitialPacket;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.LodestoneTrackerComponent;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.ExperienceOrbEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandler;
-import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -23,6 +23,8 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.PacketType;
 import net.minecraft.network.packet.PlayPackets;
 import net.minecraft.network.packet.s2c.play.*;
+import net.minecraft.server.network.EntityTrackerEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
@@ -50,8 +52,7 @@ public class S2CPacketOffsetter {
 
     public static <T extends PacketListener> Packet<?> offsetPacketByType(Packet<T> packet, Offset offset, World world) {
 
-        PacketType<? extends Packet<T>> packetType = packet.getPacketType();
-        //System.out.println(packetType);
+        PacketType<? extends Packet<T>> packetType = packet.getPacketId();
 
         if (packetType.equals(PlayPackets.BUNDLE)) {
             BundleS2CPacket bundleS2CPacket = (BundleS2CPacket) packet;
@@ -86,31 +87,34 @@ public class S2CPacketOffsetter {
             Vec3d velocity = new Vec3d(typedPacket.getVelocityX(), typedPacket.getVelocityY(), typedPacket.getVelocityZ());
             return new EntitySpawnS2CPacket(typedPacket.getEntityId(), typedPacket.getUuid(), x, y, z, typedPacket.getPitch(), typedPacket.getYaw(), typedPacket.getEntityType(), typedPacket.getEntityData(), velocity, typedPacket.getHeadYaw());
         }
+        if (packetType.equals(PlayPackets.ADD_EXPERIENCE_ORB)) {
+            ExperienceOrbSpawnS2CPacket typedPacket = (ExperienceOrbSpawnS2CPacket) packet;
+            double x = offsetX(typedPacket.getX(), offset);
+            double y = typedPacket.getY();
+            double z = offsetZ(typedPacket.getZ(), offset);
+            ExperienceOrbEntity fakeEntity = new ExperienceOrbEntity(world, x, y, z, typedPacket.getExperience());
+            fakeEntity.setId(typedPacket.getEntityId());
+            EntityTrackerEntry fakeEntityTrackerEntry = new EntityTrackerEntry((ServerWorld) world, fakeEntity, 0, false, null);
+            return new ExperienceOrbSpawnS2CPacket(fakeEntity, fakeEntityTrackerEntry);
+        }
         if (packetType.equals(PlayPackets.PLAYER_POSITION)) {
             PlayerPositionLookS2CPacket typedPacket = (PlayerPositionLookS2CPacket) packet;
-            PlayerPosition oldPlayerPosition = typedPacket.change();
-            Vec3d oldPos = oldPlayerPosition.position();
+            double oldX = typedPacket.getX();
+            double oldZ = typedPacket.getZ();
 
-            double x = typedPacket.relatives().contains(PositionFlag.X) ? oldPos.x : offsetX(oldPos.x, offset);
-            double z = typedPacket.relatives().contains(PositionFlag.Z) ? oldPos.z : offsetZ(oldPos.z, offset);
+            double x = typedPacket.getFlags().contains(PositionFlag.X) ? oldX : offsetX(oldX, offset);
+            double z = typedPacket.getFlags().contains(PositionFlag.Z) ? oldZ : offsetZ(oldZ, offset);
 
-            Vec3d newPos = new Vec3d(x, oldPos.y, z);
-
-            PlayerPosition newPlayerPosition = new PlayerPosition(newPos, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
-            return new PlayerPositionLookS2CPacket(typedPacket.teleportId(), newPlayerPosition, typedPacket.relatives());
+            return new PlayerPositionLookS2CPacket(x, typedPacket.getY(), z, typedPacket.getYaw(), typedPacket.getPitch(), typedPacket.getFlags(), typedPacket.getTeleportId());
         }
         if (packetType.equals(PlayPackets.TELEPORT_ENTITY)) {
             EntityPositionS2CPacket typedPacket = (EntityPositionS2CPacket) packet;
-            PlayerPosition oldPlayerPosition = typedPacket.change();
-            Vec3d oldPos = oldPlayerPosition.position();
+            HasAccessibleCoordinates accessibleCoordinatesPacket = (HasAccessibleCoordinates) packet;
 
-            double x = typedPacket.relatives().contains(PositionFlag.X) ? oldPos.x : offsetX(oldPos.x, offset);
-            double z = typedPacket.relatives().contains(PositionFlag.Z) ? oldPos.z : offsetZ(oldPos.z, offset);
+            accessibleCoordinatesPacket.hidecoords$setX(offsetX(typedPacket.getX(), offset));
+            accessibleCoordinatesPacket.hidecoords$setZ(offsetZ(typedPacket.getZ(), offset));
 
-            Vec3d newPos = new Vec3d(x, oldPos.y, z);
-
-            PlayerPosition newPlayerPosition = new PlayerPosition(newPos, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
-            return new EntityPositionS2CPacket(typedPacket.entityId(), newPlayerPosition, typedPacket.relatives(), typedPacket.onGround());
+            return typedPacket;
         }
         if (packetType.equals(PlayPackets.PLAYER_LOOK_AT)) {
             LookAtS2CPacket typedPacket = (LookAtS2CPacket) packet;
@@ -132,7 +136,16 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.EXPLODE)) {
             ExplosionS2CPacket typedPacket = (ExplosionS2CPacket) packet;
-            return new ExplosionS2CPacket(offset(typedPacket.center(),offset), typedPacket.playerKnockback(), typedPacket.explosionParticle(), typedPacket.explosionSound());
+
+            List<BlockPos> oldAffectedBlocks = ((ExplosionS2CPacket) packet).getAffectedBlocks();
+            List<BlockPos> newAffectedBlocks = new ArrayList<>(oldAffectedBlocks.size());
+            for (BlockPos affectedBlockPos : oldAffectedBlocks) {
+                newAffectedBlocks.add(offset(affectedBlockPos,offset));
+            }
+
+            Vec3d playerVelocity = new Vec3d(typedPacket.getPlayerVelocityX(), typedPacket.getPlayerVelocityY(), typedPacket.getPlayerVelocityY());
+
+            return new ExplosionS2CPacket(offsetX(typedPacket.getX(),offset), typedPacket.getY(), offsetZ(typedPacket.getZ(),offset), typedPacket.getRadius(), newAffectedBlocks, playerVelocity, typedPacket.getDestructionType(), typedPacket.getParticle(), typedPacket.getEmitterParticle(), typedPacket.getSoundEvent());
         }
         if (packetType.equals(PlayPackets.LEVEL_CHUNK_WITH_LIGHT)) {
             ChunkDataS2CPacket typedPacket = (ChunkDataS2CPacket) packet;
@@ -157,7 +170,7 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.LEVEL_PARTICLES)) {
             ParticleS2CPacket typedPacket = (ParticleS2CPacket) packet;
-            return new ParticleS2CPacket(typedPacket.getParameters(),typedPacket.shouldForceSpawn(), typedPacket.isImportant(), offsetX(typedPacket.getX(), offset), typedPacket.getY(), offsetZ(typedPacket.getZ(), offset), typedPacket.getOffsetX(), typedPacket.getOffsetY(), typedPacket.getOffsetZ(), typedPacket.getSpeed(), typedPacket.getCount());
+            return new ParticleS2CPacket(typedPacket.getParameters(),typedPacket.isLongDistance(), offsetX(typedPacket.getX(), offset), typedPacket.getY(), offsetZ(typedPacket.getZ(), offset), typedPacket.getOffsetX(), typedPacket.getOffsetY(), typedPacket.getOffsetZ(), typedPacket.getSpeed(), typedPacket.getCount());
         }
         if (packetType.equals(PlayPackets.SOUND)) {
             PlaySoundS2CPacket typedPacket = (PlaySoundS2CPacket) packet;
@@ -166,8 +179,12 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.MOVE_VEHICLE_S2C)) {
             VehicleMoveS2CPacket typedPacket = (VehicleMoveS2CPacket) packet;
+            HasAccessibleCoordinates accessibleCoordinatesPacket = (HasAccessibleCoordinates) packet;
 
-            return new VehicleMoveS2CPacket(offset(typedPacket.position(),offset), typedPacket.yaw(), typedPacket.pitch());
+            accessibleCoordinatesPacket.hidecoords$setX(offsetX(typedPacket.getX(), offset));
+            accessibleCoordinatesPacket.hidecoords$setZ(offsetZ(typedPacket.getZ(), offset));
+
+            return typedPacket;
         }
         if (packetType.equals(PlayPackets.SET_DEFAULT_SPAWN_POSITION)) {
             PlayerSpawnPositionS2CPacket typedPacket = (PlayerSpawnPositionS2CPacket) packet;
@@ -190,13 +207,6 @@ public class S2CPacketOffsetter {
             ChunkPos newPos = offset(oldPos,offset);
             return new ChunkRenderDistanceCenterS2CPacket(newPos.x,newPos.z);
         }
-        if (packetType.equals(PlayPackets.ENTITY_POSITION_SYNC)) {
-            EntityPositionSyncS2CPacket typedPacket = (EntityPositionSyncS2CPacket) packet;
-            PlayerPosition oldPlayerPosition = typedPacket.values();
-            Vec3d newPosition = offset(oldPlayerPosition.position(), offset);
-            PlayerPosition newPlayerPosition = new PlayerPosition(newPosition, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
-            return new EntityPositionSyncS2CPacket(typedPacket.id(), newPlayerPosition, typedPacket.onGround());
-        }
         if (packetType.equals(PlayPackets.LEVEL_EVENT)) {
             WorldEventS2CPacket typedPacket = (WorldEventS2CPacket) packet;
 
@@ -217,12 +227,12 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.CONTAINER_SET_CONTENT)) {
             InventoryS2CPacket typedPacket = (InventoryS2CPacket) packet;
-            List<ItemStack> contents = typedPacket.contents();
+            List<ItemStack> contents = typedPacket.getContents();
             DefaultedList<ItemStack> newContents = DefaultedList.ofSize(contents.size(), ItemStack.EMPTY);
             for (int i = 0; i < contents.size(); i++)
                 newContents.set(i, offset(contents.get(i),offset));
 
-            return new InventoryS2CPacket(typedPacket.syncId(), typedPacket.revision(), newContents, offset(typedPacket.cursorStack(),offset));
+            return new InventoryS2CPacket(typedPacket.getSyncId(), typedPacket.getRevision(), newContents, offset(typedPacket.getCursorStack(),offset));
         }
         if (packetType.equals((PlayPackets.SET_ENTITY_DATA))) {
             EntityTrackerUpdateS2CPacket typedPacket = (EntityTrackerUpdateS2CPacket) packet;
@@ -242,7 +252,7 @@ public class S2CPacketOffsetter {
             CommonPlayerSpawnInfo oldCommonPlayerSpawnInfo = typedPacket.commonPlayerSpawnInfo();
             Optional<GlobalPos> oldLastDeathLocation = oldCommonPlayerSpawnInfo.lastDeathLocation();
             Optional<GlobalPos> newLastDeathLocation = oldLastDeathLocation.map(pos -> offset(pos,offset));
-            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.lastGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
+            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.prevGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown());
             return new PlayerRespawnS2CPacket(newCommonPlayerSpawnInfo, typedPacket.flag());
         }
         if (packetType.equals(PlayPackets.LOGIN)) {
@@ -250,18 +260,9 @@ public class S2CPacketOffsetter {
             CommonPlayerSpawnInfo oldCommonPlayerSpawnInfo = typedPacket.commonPlayerSpawnInfo();
             Optional<GlobalPos> oldLastDeathLocation = oldCommonPlayerSpawnInfo.lastDeathLocation();
             Optional<GlobalPos> newLastDeathLocation = oldLastDeathLocation.map(pos -> offset(pos,offset));
-            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.lastGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
+            CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameMode(), oldCommonPlayerSpawnInfo.prevGameMode(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown());
             return new GameJoinS2CPacket(typedPacket.playerEntityId(), typedPacket.hardcore(), typedPacket.dimensionIds(), typedPacket.maxPlayers(), typedPacket.viewDistance(), typedPacket.simulationDistance(), typedPacket.reducedDebugInfo(), typedPacket.showDeathScreen(), typedPacket.doLimitedCrafting(), newCommonPlayerSpawnInfo, typedPacket.enforcesSecureChat());
         }
-        if (packetType.equals(PlayPackets.SET_PLAYER_INVENTORY)) {
-            SetPlayerInventoryS2CPacket typedPacket = (SetPlayerInventoryS2CPacket) packet;
-            return new SetPlayerInventoryS2CPacket(typedPacket.slot(), offset(typedPacket.contents(), offset));
-        }
-        if (packetType.equals(PlayPackets.SET_CURSOR_ITEM)) {
-            SetCursorItemS2CPacket typedPacket = (SetCursorItemS2CPacket) packet;
-            return new SetCursorItemS2CPacket(offset(typedPacket.contents(), offset));
-        }
-
         //if (!(packetType.equals(PlayPackets.SET_BORDER_CENTER) || packetType.equals(PlayPackets.SET_BORDER_SIZE) || packetType.equals(PlayPackets.MOVE_ENTITY_POS)|| packetType.equals(PlayPackets.ENTITY_POSITION_SYNC)|| packetType.equals(PlayPackets.ROTATE_HEAD)|| packetType.equals(PlayPackets.SET_ENTITY_MOTION)|| packetType.equals(PlayPackets.MOVE_ENTITY_POS_ROT)))
             //System.out.println(packet);
 

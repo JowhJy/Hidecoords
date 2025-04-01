@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(BlockEntityUpdateS2CPacket.class)
 public abstract class BlockEntityUpdateS2CPacketMixin implements HasAccessibleBlockPos {
 
-    @Shadow @Final private BlockPos pos;
     @Unique
     private BlockPos hidecoords$accessibleBlockPos;
 
@@ -33,7 +32,7 @@ public abstract class BlockEntityUpdateS2CPacketMixin implements HasAccessibleBl
         hidecoords$accessibleBlockPos = pos;
     }
     @ModifyReturnValue(method = "getPos", at = @At("RETURN"))
-    private BlockPos modifyWriteZ(BlockPos original)
+    private BlockPos modifyWrite(BlockPos original)
     {
         return hidecoords$accessibleBlockPos;
     }
