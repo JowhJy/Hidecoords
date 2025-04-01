@@ -1,8 +1,8 @@
 package com.jowhjy.hidecoords.mixin;
 
 import com.jowhjy.hidecoords.util.HasAccessibleCoordinates;
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityPositionS2CPacket.class)
@@ -45,19 +46,19 @@ public class EntityPositionS2CPacketMixin implements HasAccessibleCoordinates {
         hidecoords$accessibleZ = z;
     }
 
-    @ModifyReturnValue(method = "getX", at = @At("RETURN"))
-    private double modifyGetX(double original)
+    @Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeDouble(D)Lnet/minecraft/network/PacketByteBuf;",ordinal = 0))
+    private PacketByteBuf modifyWriteX(PacketByteBuf instance, double d)
     {
-        return hidecoords$accessibleX;
+        return instance.writeDouble(hidecoords$accessibleX);
     }
-    @ModifyReturnValue(method = "getY", at = @At("RETURN"))
-    private double modifyGetY(double original)
+    @Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeDouble(D)Lnet/minecraft/network/PacketByteBuf;",ordinal = 1))
+    private PacketByteBuf modifyWriteY(PacketByteBuf instance, double d)
     {
-        return hidecoords$accessibleY;
+        return instance.writeDouble(hidecoords$accessibleY);
     }
-    @ModifyReturnValue(method = "getZ", at = @At("RETURN"))
-    private double modifyGetZ(double original)
+    @Redirect(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;writeDouble(D)Lnet/minecraft/network/PacketByteBuf;",ordinal = 2))
+    private PacketByteBuf modifyWriteZ(PacketByteBuf instance, double d)
     {
-        return hidecoords$accessibleZ;
+        return instance.writeDouble(hidecoords$accessibleZ);
     }
 }
