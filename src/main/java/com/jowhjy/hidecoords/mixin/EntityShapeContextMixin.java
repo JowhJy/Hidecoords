@@ -27,7 +27,7 @@ public class EntityShapeContextMixin {
     @WrapOperation(method = "getCollisionShape", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getCollisionShape(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/ShapeContext;)Lnet/minecraft/util/shape/VoxelShape;"))
     public VoxelShape hidecoords$playerNoCollideWithBambooOrDripstone(BlockState instance, BlockView blockView, BlockPos blockPos, ShapeContext shapeContext, Operation<VoxelShape> original) {
         return
-                (this.entity instanceof ServerPlayerEntity && (instance.isOf(Blocks.BAMBOO_BLOCK) || instance.isOf(Blocks.POINTED_DRIPSTONE)))
+                (this.entity instanceof ServerPlayerEntity && (instance.isOf(Blocks.BAMBOO) || instance.isOf(Blocks.POINTED_DRIPSTONE)))
                         ? VoxelShapes.empty()
                         : original.call(instance, blockView, blockPos, shapeContext);
 
