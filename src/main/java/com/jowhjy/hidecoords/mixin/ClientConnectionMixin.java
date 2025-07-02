@@ -2,10 +2,7 @@ package com.jowhjy.hidecoords.mixin;
 
 import com.jowhjy.hidecoords.*;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
-import com.jowhjy.hidecoords.util.IServerPlayerEntityMixin;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.PacketCallbacks;
-import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.listener.ServerPlayPacketListener;
 import net.minecraft.network.packet.Packet;
@@ -44,8 +41,6 @@ public abstract class ClientConnectionMixin {
 
     @Shadow @Final private Queue<Consumer<ClientConnection>> queuedTasks;
 
-    @Shadow public abstract void send(Packet<?> packet, @Nullable PacketCallbacks callbacks, boolean flush);
-
     @Inject(method = "handlePacket", at =@At("HEAD"), cancellable = true)
     private static <T extends PacketListener> void hidecoords$offsetIncomingPacket(Packet<T> packet, PacketListener listener, CallbackInfo ci)
     {
@@ -68,7 +63,7 @@ public abstract class ClientConnectionMixin {
             Offset offset = ((HasCoordOffset) serverPlayNetworkHandler).hidecoords$getCoordOffset();
             return PACKETS_WORLD_BORDER.contains(packet.getPacketType())
             ? WorldBorderObfuscator.translate(packet, offset,serverPlayNetworkHandler.getPlayer())
-            : S2CPacketOffsetter.offsetPacket(packet, offset, serverPlayNetworkHandler.getPlayer().getServerWorld());
+            : S2CPacketOffsetter.offsetPacket(packet, offset, serverPlayNetworkHandler.getPlayer().getWorld());
         }
         return packet;
     }

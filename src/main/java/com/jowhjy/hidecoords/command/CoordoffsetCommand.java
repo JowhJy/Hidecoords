@@ -31,7 +31,7 @@ public class CoordoffsetCommand {
         ServerPlayerEntity player = source.getPlayerOrThrow();
         player.juhc$setShouldOffset(false);
         Hidecoords.resendDataAfterOffsetChange(player);
-        source.sendFeedback(() -> Text.literal("You should now be receiving true coordinates."), false);
+        source.sendFeedback(() -> Text.literal("You should now be receiving true coordinates. Entities may take a while to show their correct position."), false);
         return 1;
     }
 
@@ -45,7 +45,7 @@ public class CoordoffsetCommand {
         Offset newOffset = Offset.zeroAtLocation(pos);
         ServerPlayerEntity player = source.getPlayerOrThrow();
 
-        source.sendFeedback(() -> Text.literal(pos.toShortString() + " is now in the 0,0 chunk for you."), false);
+        source.sendFeedback(() -> Text.literal(pos.toShortString() + " is now in the 0,0 chunk for you. Entities may take a while to show their correct position."), false);
 
         player.juhc$setShouldOffset(true);
 

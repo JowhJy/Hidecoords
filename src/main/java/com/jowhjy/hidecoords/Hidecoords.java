@@ -2,6 +2,7 @@ package com.jowhjy.hidecoords;
 
 import com.jowhjy.hidecoords.command.CoordoffsetCommand;
 import com.jowhjy.hidecoords.mixin.ServerChunkLoadingManagerAccessor;
+import com.jowhjy.hidecoords.mixin.ServerWaypointHandlerInvoker;
 import com.jowhjy.hidecoords.mixin.ServerWorldAccessor;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -9,7 +10,7 @@ import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.network.ServerWaypointHandler;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.WorldProperties;
 import org.slf4j.Logger;
@@ -30,8 +31,8 @@ public class Hidecoords implements ModInitializer {
     //credit to Patbox (Polymer) for parts of this method!
     public static void resendDataAfterOffsetChange(ServerPlayerEntity player) {
 
-        var world = player.getServerWorld();
-        var chunksLoadingManagerAccess = ((ServerChunkLoadingManagerAccessor) ((ServerChunkManager) player.getWorld().getChunkManager()).chunkLoadingManager);
+        var world = player.getWorld();
+        var chunksLoadingManagerAccess = ((ServerChunkLoadingManagerAccessor) player.getWorld().getChunkManager().chunkLoadingManager);
 
         try {
             for (var e : ((ServerWorldAccessor) player.getWorld()).hidecoords$getEntityManager().getLookup().iterate()) {
@@ -68,6 +69,10 @@ public class Hidecoords implements ModInitializer {
             player.networkHandler.chunkDataSender.unload(player, chunk.getPos());
             player.networkHandler.chunkDataSender.add(chunk);
         });
+
+        //waypoints?
+        ServerWaypointHandler waypointHandler = player.getWorld().getWaypointHandler();
+        waypointHandler.getWaypoints().forEach(waypoint -> ((ServerWaypointHandlerInvoker)waypointHandler).invokeRefreshTracking(player, waypoint));
     }
 
 

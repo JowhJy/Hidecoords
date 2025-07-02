@@ -4,6 +4,7 @@ import com.jowhjy.hidecoords.mixin.ChunkDeltaUpdateS2CPacketAccessor;
 import com.jowhjy.hidecoords.util.HasAccessibleBlockPos;
 import com.jowhjy.hidecoords.util.HasAccessibleChunkPos;
 import com.jowhjy.hidecoords.util.IChunkDeltaUpdateS2CPacketMixin;
+import com.jowhjy.hidecoords.util.OffsetableTrackedWaypoint;
 import com.mojang.datafixers.util.Pair;
 import eu.pb4.polymer.core.impl.interfaces.EntityAttachedPacket;
 import eu.pb4.polymer.core.impl.interfaces.PossiblyInitialPacket;
@@ -26,7 +27,10 @@ import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
+import net.minecraft.world.waypoint.TrackedWaypoint;
+import net.minecraft.world.waypoint.Waypoint;
 
+import javax.sound.midi.Track;
 import java.util.*;
 
 public class S2CPacketOffsetter {
@@ -261,6 +265,11 @@ public class S2CPacketOffsetter {
             SetCursorItemS2CPacket typedPacket = (SetCursorItemS2CPacket) packet;
             return new SetCursorItemS2CPacket(offset(typedPacket.contents(), offset));
         }
+        if (packetType.equals(PlayPackets.WAYPOINT)) {
+            WaypointS2CPacket typedPacket = (WaypointS2CPacket) packet;
+            TrackedWaypoint waypoint = typedPacket.waypoint();
+            return new WaypointS2CPacket(typedPacket.operation(), offset(waypoint, offset));
+        }
 
         //if (!(packetType.equals(PlayPackets.SET_BORDER_CENTER) || packetType.equals(PlayPackets.SET_BORDER_SIZE) || packetType.equals(PlayPackets.MOVE_ENTITY_POS)|| packetType.equals(PlayPackets.ENTITY_POSITION_SYNC)|| packetType.equals(PlayPackets.ROTATE_HEAD)|| packetType.equals(PlayPackets.SET_ENTITY_MOTION)|| packetType.equals(PlayPackets.MOVE_ENTITY_POS_ROT)))
             //System.out.println(packet);
@@ -328,5 +337,9 @@ public class S2CPacketOffsetter {
 
     private static GlobalPos offset(GlobalPos globalPos, Offset offset) {
         return new GlobalPos(globalPos.dimension(), offset(globalPos.pos(),offset));
+    }
+
+    private static TrackedWaypoint offset(TrackedWaypoint waypoint, Offset offset) {
+        return (TrackedWaypoint) ((OffsetableTrackedWaypoint)waypoint).hidecoords$offset(offset);
     }
 }

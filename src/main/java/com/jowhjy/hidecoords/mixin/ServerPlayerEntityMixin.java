@@ -28,13 +28,13 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements IS
 
     @Shadow public ServerPlayNetworkHandler networkHandler;
 
+    @Shadow public abstract ServerWorld getWorld();
+
     @Unique boolean offsetActive = true;
 
-    public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
-        super(world, pos, yaw, gameProfile);
+    public ServerPlayerEntityMixin(World world, GameProfile gameProfile) {
+        super(world, gameProfile);
     }
-
-    @Shadow public abstract ServerWorld getServerWorld();
 
     @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;setServerWorld(Lnet/minecraft/server/world/ServerWorld;)V"))
     public void hidecoords$changeOffsetOnDimensionChange(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir)
@@ -47,22 +47,22 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements IS
     public void hidecoords$changeBorderOnTeleport(TeleportTarget teleportTarget, CallbackInfoReturnable<Entity> cir)
     {
         if (!juhc$shouldOffset()) return;
-        this.networkHandler.sendPacket(new WorldBorderSizeChangedS2CPacket(this.getServerWorld().getWorldBorder()));
-        this.networkHandler.sendPacket(new WorldBorderCenterChangedS2CPacket(this.getServerWorld().getWorldBorder()));
+        this.networkHandler.sendPacket(new WorldBorderSizeChangedS2CPacket(this.getWorld().getWorldBorder()));
+        this.networkHandler.sendPacket(new WorldBorderCenterChangedS2CPacket(this.getWorld().getWorldBorder()));
     }
     @Override
     public void travel(Vec3d movementInput)
     {
         super.travel(movementInput);
         if (!juhc$shouldOffset()) return;
-        this.networkHandler.sendPacket(new WorldBorderSizeChangedS2CPacket(this.getServerWorld().getWorldBorder()));
-        this.networkHandler.sendPacket(new WorldBorderCenterChangedS2CPacket(this.getServerWorld().getWorldBorder()));
+        this.networkHandler.sendPacket(new WorldBorderSizeChangedS2CPacket(this.getWorld().getWorldBorder()));
+        this.networkHandler.sendPacket(new WorldBorderCenterChangedS2CPacket(this.getWorld().getWorldBorder()));
     }
 
     @Unique @Override
     public boolean juhc$shouldOffset()
     {
-        return offsetActive && this.getServerWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE);
+        return offsetActive && this.getWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE);
     }
     @Unique @Override
     public void juhc$setShouldOffset(boolean value)

@@ -13,10 +13,13 @@
     "LightUpdateS2CPacketMixin",
     "PlayerManagerMixin",
     "PlayerMoveC2SPacketAccessor",
+    "PositionalTrackedWaypointMixin",
     "ServerChunkLoadingManagerAccessor",
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
-    "ServerWorldAccessor"
+    "ServerWaypointHandlerInvoker",
+    "ServerWorldAccessor",
+    "TrackedWaypointMixin"
   ],
   "injectors": {
     "defaultRequire": 1

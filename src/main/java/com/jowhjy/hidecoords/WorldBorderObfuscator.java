@@ -54,7 +54,7 @@ public class WorldBorderObfuscator {
 
     public static Packet<?> translate(@NotNull Packet<?> packet, Offset offset, ServerPlayerEntity player) {
 
-        ServerWorld world = player.getServerWorld();
+        ServerWorld world = player.getWorld();
 
         /*
          * For reasons I cannot fathom, the Minecraft protocol applies the world's coordinate scaling to the world
