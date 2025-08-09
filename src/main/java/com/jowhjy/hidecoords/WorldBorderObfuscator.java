@@ -86,11 +86,11 @@ public class WorldBorderObfuscator {
                 dummyWorldBorder.setMaxRadius(typedPacket.getMaxRadius());
                 dummyWorldBorder.setWarningBlocks(typedPacket.getWarningBlocks());
                 dummyWorldBorder.setWarningTime(typedPacket.getWarningTime());
-                dummyWorldBorder.setCenter(typedPacket.getCenterX() + offset.getX() * scaleFactor, typedPacket.getCenterZ() + offset.getZ() * scaleFactor);
+                dummyWorldBorder.setCenter((typedPacket.getCenterX() + offset.getX()) * scaleFactor, (typedPacket.getCenterZ() + offset.getZ()) * scaleFactor);
                 return new WorldBorderInitializeS2CPacket(dummyWorldBorder);
             } else if (packet.getPacketType().equals(PlayPackets.SET_BORDER_CENTER)) {
                 WorldBorderCenterChangedS2CPacket typedPacket = (WorldBorderCenterChangedS2CPacket)(packet);
-                dummyWorldBorder.setCenter(typedPacket.getCenterX() + offset.getX() * scaleFactor, typedPacket.getCenterZ() + offset.getZ() * scaleFactor);
+                dummyWorldBorder.setCenter((typedPacket.getCenterX() + offset.getX()) * scaleFactor, (typedPacket.getCenterZ() + offset.getZ()) * scaleFactor);
                 return new WorldBorderCenterChangedS2CPacket(dummyWorldBorder);
             }
             return packet;
