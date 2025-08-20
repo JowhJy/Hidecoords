@@ -18,7 +18,9 @@ import org.slf4j.LoggerFactory;
 
 public class Hidecoords implements ModInitializer {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger("hidecoords");
+
+    public static final String MOD_ID = "hidecoords";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final GameRules.Key<GameRules.BooleanRule> HIDECOORDS_GAMERULE =
             GameRuleRegistry.register("hideCoordinates", GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true));

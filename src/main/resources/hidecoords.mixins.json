@@ -9,7 +9,6 @@
     "ChunkDeltaUpdateS2CPacketAccessor",
     "ChunkDeltaUpdateS2CPacketMixin",
     "ClientConnectionMixin",
-    "EntityShapeContextMixin",
     "LightUpdateS2CPacketMixin",
     "PlayerManagerMixin",
     "PlayerMoveC2SPacketAccessor",
@@ -19,7 +18,9 @@
     "ServerPlayNetworkHandlerMixin",
     "ServerWaypointHandlerInvoker",
     "ServerWorldAccessor",
-    "TrackedWaypointMixin"
+    "TrackedWaypointMixin",
+    "collision_fix.BambooBlockMixin",
+    "collision_fix.PointedDripstoneBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1
