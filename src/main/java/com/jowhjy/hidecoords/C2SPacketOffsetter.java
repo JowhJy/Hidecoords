@@ -111,6 +111,8 @@ public class C2SPacketOffsetter {
 
             return new TestInstanceBlockActionC2SPacket(unoffset(typedPacket.pos(),offset), typedPacket.action(), typedPacket.data());
         }
+        //CONTAINER_CLICK_C2S cannot be unoffset because the item is sent as a hash, causing the ghost item desyncs for lodestone compasses. (see also https://github.com/joshuaprince/CoordinateOffset/blob/master/src/main/java/com/jtprince/coordinateoffset/offsetter/client/OffsetterClientClickWindow.java)
+        //there is nothing I can do about that for now
 
 
         return (Packet<ServerPlayPacketListener>) packet;
