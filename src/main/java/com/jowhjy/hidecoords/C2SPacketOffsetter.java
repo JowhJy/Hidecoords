@@ -4,6 +4,8 @@ import com.jowhjy.hidecoords.mixin.PlayerMoveC2SPacketAccessor;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -134,6 +136,14 @@ public class C2SPacketOffsetter {
         if (itemStack == null) return null;
 
         ItemStack result = itemStack.copy();
+
+        BundleContentsComponent comp;
+        if ((comp = itemStack.get(DataComponentTypes.BUNDLE_CONTENTS)) != null)
+        {
+            BundleContentsComponent.Builder newBundleComp = new BundleContentsComponent.Builder(BundleContentsComponent.DEFAULT);
+            comp.stream().forEach(innerStack -> newBundleComp.add(unoffset(innerStack, offset)));
+            result.set(DataComponentTypes.BUNDLE_CONTENTS, newBundleComp.build());
+        }
 
         if (itemStack.isOf(Items.COMPASS)) {
             itemStack.getComponents().forEach(componentMapEntry -> {
