@@ -10,6 +10,8 @@ import eu.pb4.polymer.core.impl.interfaces.EntityAttachedPacket;
 import eu.pb4.polymer.core.impl.interfaces.PossiblyInitialPacket;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -319,6 +321,14 @@ public class S2CPacketOffsetter {
         if (itemStack == null) return null;
 
         ItemStack result = itemStack.copy();
+
+        BundleContentsComponent comp;
+        if ((comp = itemStack.get(DataComponentTypes.BUNDLE_CONTENTS)) != null)
+        {
+            BundleContentsComponent.Builder newBundleComp = new BundleContentsComponent.Builder(BundleContentsComponent.DEFAULT);
+            comp.stream().forEach(innerStack -> newBundleComp.add(offset(innerStack, offset)));
+            result.set(DataComponentTypes.BUNDLE_CONTENTS, newBundleComp.build());
+        }
 
         if (itemStack.isOf(Items.COMPASS)) {
             itemStack.getComponents().forEach(componentMapEntry -> {
