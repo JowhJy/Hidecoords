@@ -13,11 +13,10 @@ import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.component.type.LodestoneTrackerComponent;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityPosition;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedDataHandler;
-import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -29,10 +28,9 @@ import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldProperties;
 import net.minecraft.world.waypoint.TrackedWaypoint;
-import net.minecraft.world.waypoint.Waypoint;
 
-import javax.sound.midi.Track;
 import java.util.*;
 
 public class S2CPacketOffsetter {
@@ -89,12 +87,11 @@ public class S2CPacketOffsetter {
             double x = offsetX(typedPacket.getX(), offset);
             double y = typedPacket.getY();
             double z = offsetZ(typedPacket.getZ(), offset);
-            Vec3d velocity = new Vec3d(typedPacket.getVelocityX(), typedPacket.getVelocityY(), typedPacket.getVelocityZ());
-            return new EntitySpawnS2CPacket(typedPacket.getEntityId(), typedPacket.getUuid(), x, y, z, typedPacket.getPitch(), typedPacket.getYaw(), typedPacket.getEntityType(), typedPacket.getEntityData(), velocity, typedPacket.getHeadYaw());
+            return new EntitySpawnS2CPacket(typedPacket.getEntityId(), typedPacket.getUuid(), x, y, z, typedPacket.getPitch(), typedPacket.getYaw(), typedPacket.getEntityType(), typedPacket.getEntityData(), typedPacket.getVelocity(), typedPacket.getHeadYaw());
         }
         if (packetType.equals(PlayPackets.PLAYER_POSITION)) {
             PlayerPositionLookS2CPacket typedPacket = (PlayerPositionLookS2CPacket) packet;
-            PlayerPosition oldPlayerPosition = typedPacket.change();
+            EntityPosition oldPlayerPosition = typedPacket.change();
             Vec3d oldPos = oldPlayerPosition.position();
 
             double x = typedPacket.relatives().contains(PositionFlag.X) ? oldPos.x : offsetX(oldPos.x, offset);
@@ -102,12 +99,12 @@ public class S2CPacketOffsetter {
 
             Vec3d newPos = new Vec3d(x, oldPos.y, z);
 
-            PlayerPosition newPlayerPosition = new PlayerPosition(newPos, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
+            EntityPosition newPlayerPosition = new EntityPosition(newPos, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
             return new PlayerPositionLookS2CPacket(typedPacket.teleportId(), newPlayerPosition, typedPacket.relatives());
         }
         if (packetType.equals(PlayPackets.TELEPORT_ENTITY)) {
             EntityPositionS2CPacket typedPacket = (EntityPositionS2CPacket) packet;
-            PlayerPosition oldPlayerPosition = typedPacket.change();
+            EntityPosition oldPlayerPosition = typedPacket.change();
             Vec3d oldPos = oldPlayerPosition.position();
 
             double x = typedPacket.relatives().contains(PositionFlag.X) ? oldPos.x : offsetX(oldPos.x, offset);
@@ -115,7 +112,7 @@ public class S2CPacketOffsetter {
 
             Vec3d newPos = new Vec3d(x, oldPos.y, z);
 
-            PlayerPosition newPlayerPosition = new PlayerPosition(newPos, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
+            EntityPosition newPlayerPosition = new EntityPosition(newPos, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
             return new EntityPositionS2CPacket(typedPacket.entityId(), newPlayerPosition, typedPacket.relatives(), typedPacket.onGround());
         }
         if (packetType.equals(PlayPackets.PLAYER_LOOK_AT)) {
@@ -138,7 +135,7 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.EXPLODE)) {
             ExplosionS2CPacket typedPacket = (ExplosionS2CPacket) packet;
-            return new ExplosionS2CPacket(offset(typedPacket.center(),offset), typedPacket.playerKnockback(), typedPacket.explosionParticle(), typedPacket.explosionSound());
+            return new ExplosionS2CPacket(offset(typedPacket.center(),offset), typedPacket.radius(), typedPacket.blockCount(), typedPacket.playerKnockback(), typedPacket.explosionParticle(), typedPacket.explosionSound(), typedPacket.blockParticles());
         }
         if (packetType.equals(PlayPackets.LEVEL_CHUNK_WITH_LIGHT)) {
             ChunkDataS2CPacket typedPacket = (ChunkDataS2CPacket) packet;
@@ -176,8 +173,9 @@ public class S2CPacketOffsetter {
             return new VehicleMoveS2CPacket(offset(typedPacket.position(),offset), typedPacket.yaw(), typedPacket.pitch());
         }
         if (packetType.equals(PlayPackets.SET_DEFAULT_SPAWN_POSITION)) {
+
             PlayerSpawnPositionS2CPacket typedPacket = (PlayerSpawnPositionS2CPacket) packet;
-            return new PlayerSpawnPositionS2CPacket(offset(typedPacket.getPos(), offset), typedPacket.getAngle());
+            return new PlayerSpawnPositionS2CPacket(new WorldProperties.SpawnPoint(offset(typedPacket.respawnData().globalPos(), offset), typedPacket.respawnData().yaw(), typedPacket.respawnData().pitch()));
         }
         if (packetType.equals(PlayPackets.FORGET_LEVEL_CHUNK)) {
             UnloadChunkS2CPacket typedPacket = (UnloadChunkS2CPacket) packet;
@@ -198,9 +196,9 @@ public class S2CPacketOffsetter {
         }
         if (packetType.equals(PlayPackets.ENTITY_POSITION_SYNC)) {
             EntityPositionSyncS2CPacket typedPacket = (EntityPositionSyncS2CPacket) packet;
-            PlayerPosition oldPlayerPosition = typedPacket.values();
+            EntityPosition oldPlayerPosition = typedPacket.values();
             Vec3d newPosition = offset(oldPlayerPosition.position(), offset);
-            PlayerPosition newPlayerPosition = new PlayerPosition(newPosition, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
+            EntityPosition newPlayerPosition = new EntityPosition(newPosition, oldPlayerPosition.deltaMovement(), oldPlayerPosition.yaw(), oldPlayerPosition.pitch());
             return new EntityPositionSyncS2CPacket(typedPacket.id(), newPlayerPosition, typedPacket.onGround());
         }
         if (packetType.equals(PlayPackets.LEVEL_EVENT)) {
@@ -271,6 +269,19 @@ public class S2CPacketOffsetter {
             WaypointS2CPacket typedPacket = (WaypointS2CPacket) packet;
             TrackedWaypoint waypoint = typedPacket.waypoint();
             return new WaypointS2CPacket(typedPacket.operation(), offset(waypoint, offset));
+        }
+
+        if (packetType.equals(PlayPackets.BLOCK_VALUE_DEBUG)) {
+            BlockValueDebugS2CPacket typedPacket = (BlockValueDebugS2CPacket) packet;
+            return new BlockValueDebugS2CPacket(offset(typedPacket.blockPos(),offset), typedPacket.update());
+        }
+        if (packetType.equals(PlayPackets.CHUNK_VALUE_DEBUG)) {
+            ChunkValueDebugS2CPacket typedPacket = (ChunkValueDebugS2CPacket) packet;
+            return new ChunkValueDebugS2CPacket(offset(typedPacket.chunkPos(),offset), typedPacket.update());
+        }
+        if (packetType.equals(PlayPackets.GAME_TEST_HIGHLIGHT_POS)) {
+            GameTestHighlightPosS2CPacket typedPacket = (GameTestHighlightPosS2CPacket) packet;
+            return new GameTestHighlightPosS2CPacket(offset(typedPacket.absolutePos(),offset), typedPacket.relativePos());
         }
 
         //if (!(packetType.equals(PlayPackets.SET_BORDER_CENTER) || packetType.equals(PlayPackets.SET_BORDER_SIZE) || packetType.equals(PlayPackets.MOVE_ENTITY_POS)|| packetType.equals(PlayPackets.ENTITY_POSITION_SYNC)|| packetType.equals(PlayPackets.ROTATE_HEAD)|| packetType.equals(PlayPackets.SET_ENTITY_MOTION)|| packetType.equals(PlayPackets.MOVE_ENTITY_POS_ROT)))

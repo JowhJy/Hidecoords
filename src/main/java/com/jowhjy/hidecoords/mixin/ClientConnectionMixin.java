@@ -63,7 +63,7 @@ public abstract class ClientConnectionMixin {
             Offset offset = ((HasCoordOffset) serverPlayNetworkHandler).hidecoords$getCoordOffset();
             return PACKETS_WORLD_BORDER.contains(packet.getPacketType())
             ? WorldBorderObfuscator.translate(packet, offset,serverPlayNetworkHandler.getPlayer())
-            : S2CPacketOffsetter.offsetPacket(packet, offset, serverPlayNetworkHandler.getPlayer().getWorld());
+            : S2CPacketOffsetter.offsetPacket(packet, offset, serverPlayNetworkHandler.getPlayer().getEntityWorld());
         }
         return packet;
     }

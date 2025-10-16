@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BlockEntityUpdateS2CPacketMixin",
+    "ChunkBasedTrackedWaypointMixin",
     "ChunkDataS2CPacketMixin",
     "ChunkDeltaUpdateS2CPacketAccessor",
     "ChunkDeltaUpdateS2CPacketMixin",

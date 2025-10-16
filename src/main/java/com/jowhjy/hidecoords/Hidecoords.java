@@ -33,11 +33,11 @@ public class Hidecoords implements ModInitializer {
     //credit to Patbox (Polymer) for parts of this method!
     public static void resendDataAfterOffsetChange(ServerPlayerEntity player) {
 
-        var world = player.getWorld();
-        var chunksLoadingManagerAccess = ((ServerChunkLoadingManagerAccessor) player.getWorld().getChunkManager().chunkLoadingManager);
+        var world = player.getEntityWorld();
+        var chunksLoadingManagerAccess = ((ServerChunkLoadingManagerAccessor) player.getEntityWorld().getChunkManager().chunkLoadingManager);
 
         try {
-            for (var e : ((ServerWorldAccessor) player.getWorld()).hidecoords$getEntityManager().getLookup().iterate()) {
+            for (var e : ((ServerWorldAccessor) player.getEntityWorld()).hidecoords$getEntityManager().getLookup().iterate()) {
                 var tracker = chunksLoadingManagerAccess.hidecoords$getEntityTrackers().get(e.getId());
                 if (tracker != null) {
                     tracker.updateTrackedStatus(player);
@@ -48,8 +48,7 @@ public class Hidecoords implements ModInitializer {
             Hidecoords.LOGGER.warn("Failed to reload entities", throwable);
         }
 
-        if (player.getServer() == null) return;
-        var playerManager = player.getServer().getPlayerManager();
+        var playerManager = player.getEntityWorld().getServer().getPlayerManager();
         //some code from respawnPlayer is reused here
         WorldProperties worldProperties = world.getLevelProperties();
         player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(player.createCommonPlayerSpawnInfo(world), PlayerRespawnS2CPacket.KEEP_ALL));
@@ -73,7 +72,7 @@ public class Hidecoords implements ModInitializer {
         });
 
         //waypoints?
-        ServerWaypointHandler waypointHandler = player.getWorld().getWaypointHandler();
+        ServerWaypointHandler waypointHandler = player.getEntityWorld().getWaypointHandler();
         waypointHandler.getWaypoints().forEach(waypoint -> ((ServerWaypointHandlerInvoker)waypointHandler).invokeRefreshTracking(player, waypoint));
     }
 

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(targets = "net.minecraft.world.waypoint.TrackedWaypoint$ChunkBased")
 public abstract class ChunkBasedTrackedWaypointMixin extends TrackedWaypoint implements OffsetableTrackedWaypoint {
-    @Shadow private Vec3i chunkPos;
+    @Shadow private ChunkPos chunkPos;
 
     ChunkBasedTrackedWaypointMixin() {
         super(null, null, null);
@@ -19,6 +19,6 @@ public abstract class ChunkBasedTrackedWaypointMixin extends TrackedWaypoint imp
 
     @Override
     public OffsetableTrackedWaypoint hidecoords$offset(Offset offset) {
-        return (OffsetableTrackedWaypoint)TrackedWaypoint.ofChunk(source.left().get(), this.getConfig(), new ChunkPos(this.chunkPos.getX() + offset.getChunkX(), this.chunkPos.getZ() + offset.getChunkZ()));
+        return (OffsetableTrackedWaypoint)TrackedWaypoint.ofChunk(source.left().get(), this.getConfig(), new ChunkPos(this.chunkPos.x + offset.getChunkX(), this.chunkPos.z + offset.getChunkZ()));
     }
 }
