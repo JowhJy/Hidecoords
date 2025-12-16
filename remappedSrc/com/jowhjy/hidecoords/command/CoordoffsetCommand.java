@@ -3,7 +3,6 @@ package com.jowhjy.hidecoords.command;
 import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
-import com.jowhjy.hidecoords.util.IServerPlayerEntityMixin;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandBuildContext;
@@ -30,7 +29,7 @@ public class CoordoffsetCommand {
 
     private static int executeSetNone(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
-        ((IServerPlayerEntityMixin)player).hidecoords$setShouldOffset(false);
+        player.juhc$setShouldOffset(false);
         Hidecoords.resendDataAfterOffsetChange(player);
         source.sendSuccess(() -> Component.literal("You should now be receiving true coordinates. Entities may take a while to show their correct position."), false);
         return 1;
@@ -48,7 +47,7 @@ public class CoordoffsetCommand {
 
         source.sendSuccess(() -> Component.literal(pos.toShortString() + " is now in the 0,0 chunk for you. Entities may take a while to show their correct position."), false);
 
-        ((IServerPlayerEntityMixin)player).hidecoords$setShouldOffset(true);
+        player.juhc$setShouldOffset(true);
 
         if (newOffset.equals(((HasCoordOffset) player.connection).hidecoords$getCoordOffset())) return 0;
 

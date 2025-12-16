@@ -1,4 +1,4 @@
 accessWidener v2 named
 
-accessible class net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker
-accessible method net/minecraft/world/waypoint/TrackedWaypoint <init> (Lcom/mojang/datafixers/util/Either;Lnet/minecraft/world/waypoint/Waypoint$Config;Lnet/minecraft/world/waypoint/TrackedWaypoint$Type;)V
+accessible class net/minecraft/server/level/ChunkMap$TrackedEntity
+accessible method net/minecraft/world/waypoints/TrackedWaypoint <init> (Lcom/mojang/datafixers/util/Either;Lnet/minecraft/world/waypoints/Waypoint$Icon;Lnet/minecraft/world/waypoints/TrackedWaypoint$Type;)V

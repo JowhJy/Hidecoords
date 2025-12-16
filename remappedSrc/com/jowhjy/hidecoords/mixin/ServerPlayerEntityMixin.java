@@ -45,7 +45,7 @@ public abstract class ServerPlayerEntityMixin extends Player implements IServerP
     @Inject(method = "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;", at = @At("TAIL"))
     public void hidecoords$changeBorderOnTeleport(TeleportTransition teleportTarget, CallbackInfoReturnable<Entity> cir)
     {
-        if (!hidecoords$shouldOffset()) return;
+        if (!juhc$shouldOffset()) return;
         this.connection.send(new ClientboundSetBorderSizePacket(this.level().getWorldBorder()));
         this.connection.send(new ClientboundSetBorderCenterPacket(this.level().getWorldBorder()));
     }
@@ -53,18 +53,18 @@ public abstract class ServerPlayerEntityMixin extends Player implements IServerP
     public void travel(Vec3 movementInput)
     {
         super.travel(movementInput);
-        if (!hidecoords$shouldOffset()) return;
+        if (!juhc$shouldOffset()) return;
         this.connection.send(new ClientboundSetBorderSizePacket(this.level().getWorldBorder()));
         this.connection.send(new ClientboundSetBorderCenterPacket(this.level().getWorldBorder()));
     }
 
     @Unique @Override
-    public boolean hidecoords$shouldOffset()
+    public boolean juhc$shouldOffset()
     {
         return offsetActive && this.level().getGameRules().get(Hidecoords.HIDECOORDS_GAMERULE);
     }
     @Unique @Override
-    public void hidecoords$setShouldOffset(boolean value)
+    public void juhc$setShouldOffset(boolean value)
     {
         offsetActive = value;
     }

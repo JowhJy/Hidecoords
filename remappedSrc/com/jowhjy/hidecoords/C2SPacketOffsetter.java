@@ -1,11 +1,14 @@
 package com.jowhjy.hidecoords;
 
 import com.jowhjy.hidecoords.mixin.PlayerMoveC2SPacketAccessor;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.PacketListener;
+import net.minecraft.network.packet.c2s.play.*;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.game.GamePacketTypes;

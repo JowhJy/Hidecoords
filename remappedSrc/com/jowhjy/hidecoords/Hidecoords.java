@@ -7,6 +7,7 @@ import com.jowhjy.hidecoords.mixin.ServerWorldAccessor;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
+import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
@@ -76,7 +77,7 @@ public class Hidecoords implements ModInitializer {
 
         //waypoints?
         ServerWaypointManager waypointHandler = player.level().getWaypointManager();
-        waypointHandler.transmitters().forEach(waypoint -> ((ServerWaypointHandlerInvoker)waypointHandler).invokeCreateConnection(player, waypoint));
+        waypointHandler.transmitters().forEach(waypoint -> ((ServerWaypointHandlerInvoker)waypointHandler).invokeRefreshTracking(player, waypoint));
     }
 
 

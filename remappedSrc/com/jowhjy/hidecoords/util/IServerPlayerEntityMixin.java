@@ -5,13 +5,13 @@ import org.spongepowered.asm.mixin.Unique;
 public interface IServerPlayerEntityMixin {
 
     @Unique
-    default boolean hidecoords$shouldOffset()
+    default boolean juhc$shouldOffset()
     {
         return false;
     }
 
     @Unique
-    default void hidecoords$setShouldOffset(boolean b) {
+    default void juhc$setShouldOffset(boolean b) {
 
     }
 }

@@ -31,7 +31,7 @@
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/server/network/ServerPlayerEntity": ["com/jowhjy/hidecoords/util/IServerPlayerEntityMixin"]
+      "net/minecraft/server/level/ServerPlayer": ["com/jowhjy/hidecoords/util/IServerPlayerEntityMixin"]
     }
   },
   "accessWidener" : "hidecoords.accesswidener"

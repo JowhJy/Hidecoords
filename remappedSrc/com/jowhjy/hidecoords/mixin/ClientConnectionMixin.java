@@ -46,7 +46,7 @@ public abstract class ClientConnectionMixin {
     {
         if (listener instanceof ServerGamePacketListenerImpl serverPlayNetworkHandler) {
             //dont offset if gamerule off
-            if (!serverPlayNetworkHandler.getPlayer().hidecoords$shouldOffset()) return;
+            if (!serverPlayNetworkHandler.getPlayer().juhc$shouldOffset()) return;
 
             Offset offset = ((HasCoordOffset)serverPlayNetworkHandler).hidecoords$getCoordOffset();
             Packet<ServerGamePacketListener> newPacket = C2SPacketOffsetter.offsetPacket(packet, offset);
@@ -58,7 +58,7 @@ public abstract class ClientConnectionMixin {
     public Packet<?> juhc$offsetOutgoingPacket(Packet<?> packet) {
         if (this.packetListener instanceof  ServerGamePacketListenerImpl serverPlayNetworkHandler) {
             //dont offset if gamerule off
-            if (!serverPlayNetworkHandler.getPlayer().hidecoords$shouldOffset()) return packet;
+            if (!serverPlayNetworkHandler.getPlayer().juhc$shouldOffset()) return packet;
 
             Offset offset = ((HasCoordOffset) serverPlayNetworkHandler).hidecoords$getCoordOffset();
             return PACKETS_WORLD_BORDER.contains(packet.type())
