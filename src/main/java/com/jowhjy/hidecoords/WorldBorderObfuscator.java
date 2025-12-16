@@ -65,7 +65,7 @@ public class WorldBorderObfuscator {
          * only accessible through NMS as DimensionType::coordinateScale). For now, just checking environment should be
          * enough.
          */
-        double scaleFactor = world.getDimension().coordinateScale();
+        double scaleFactor = 1; //JowhJy update 1.21.11: seems that this is no longer the case now, set it to 1.
 
         //dummy world border used for packet creation
         WorldBorder dummyWorldBorder = new WorldBorder();
@@ -79,7 +79,7 @@ public class WorldBorderObfuscator {
                 WorldBorderInitializeS2CPacket typedPacket = (WorldBorderInitializeS2CPacket)(packet);
                 long l = typedPacket.getSizeLerpTime();
                 if (l > 0L) {
-                    dummyWorldBorder.interpolateSize(typedPacket.getSize(), typedPacket.getSizeLerpTarget(), l);
+                    dummyWorldBorder.interpolateSize(typedPacket.getSize(), typedPacket.getSizeLerpTarget(), l, world.getTime());
                 } else {
                     dummyWorldBorder.setSize(typedPacket.getSizeLerpTarget());
                 }
@@ -134,7 +134,7 @@ public class WorldBorderObfuscator {
             var typedPacket = (WorldBorderInitializeS2CPacket)(packet);
             long l = typedPacket.getSizeLerpTime();
             if (l > 0L) {
-                dummyWorldBorder.interpolateSize(diameter, diameter, l);
+                dummyWorldBorder.interpolateSize(diameter, diameter, l, world.getTime());
             } else {
                 dummyWorldBorder.setSize(diameter);
             }
@@ -152,7 +152,7 @@ public class WorldBorderObfuscator {
             var typedPacket = (WorldBorderInterpolateSizeS2CPacket)(packet);
             long l = typedPacket.getSizeLerpTime();
             if (l > 0L) {
-                dummyWorldBorder.interpolateSize(diameter, diameter, l);
+                dummyWorldBorder.interpolateSize(diameter, diameter, l, world.getTime());
             } else {
                 dummyWorldBorder.setSize(diameter);
             }

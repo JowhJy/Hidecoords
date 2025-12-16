@@ -17,7 +17,7 @@ public class CoordoffsetCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess)
     {
-        dispatcher.register(CommandManager.literal("coordoffset").requires(source -> source.hasPermissionLevel(3) && source.isExecutedByPlayer())
+        dispatcher.register(CommandManager.literal("coordoffset").requires(CommandManager.requirePermissionLevel(CommandManager.ADMINS_CHECK)).requires(ServerCommandSource::isExecutedByPlayer)
                 .then(CommandManager.literal("get")
                         .executes(context -> executeGet(context.getSource())))
                 .then(CommandManager.literal("set")

@@ -6,13 +6,13 @@ import com.jowhjy.hidecoords.mixin.ServerWaypointHandlerInvoker;
 import com.jowhjy.hidecoords.mixin.ServerWorldAccessor;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
-import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
+import net.fabricmc.fabric.api.gamerule.v1.GameRuleBuilder;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerWaypointHandler;
-import net.minecraft.world.GameRules;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.WorldProperties;
+import net.minecraft.world.rule.GameRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +22,8 @@ public class Hidecoords implements ModInitializer {
     public static final String MOD_ID = "hidecoords";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public static final GameRules.Key<GameRules.BooleanRule> HIDECOORDS_GAMERULE =
-            GameRuleRegistry.register("hideCoordinates", GameRules.Category.PLAYER, GameRuleFactory.createBooleanRule(true));
+    public static final GameRule<Boolean> HIDECOORDS_GAMERULE =
+            GameRuleBuilder.forBoolean(true).buildAndRegister(Identifier.of("hidecoords","hidecoords"));
 
     @Override
     public void onInitialize() {

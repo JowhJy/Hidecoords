@@ -61,7 +61,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements IS
     @Unique @Override
     public boolean juhc$shouldOffset()
     {
-        return offsetActive && this.getEntityWorld().getGameRules().getBoolean(Hidecoords.HIDECOORDS_GAMERULE);
+        return offsetActive && this.getEntityWorld().getGameRules().getValue(Hidecoords.HIDECOORDS_GAMERULE);
     }
     @Unique @Override
     public void juhc$setShouldOffset(boolean value)
