@@ -13,12 +13,13 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 public class CoordoffsetCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess)
     {
-        dispatcher.register(Commands.literal("coordoffset").requires(Commands.hasPermission(Commands.LEVEL_ADMINS)).requires(CommandSourceStack::isPlayer)
+        dispatcher.register(Commands.literal("coordoffset").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                 .then(Commands.literal("get")
                         .executes(context -> executeGet(context.getSource())))
                 .then(Commands.literal("set")
@@ -30,7 +31,7 @@ public class CoordoffsetCommand {
 
     private static int executeSetNone(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
-        ((IServerPlayerEntityMixin)player).hidecoords$setShouldOffset(false);
+        player.hidecoords$setShouldOffset(false);
         Hidecoords.resendDataAfterOffsetChange(player);
         source.sendSuccess(() -> Component.literal("You should now be receiving true coordinates. Entities may take a while to show their correct position."), false);
         return 1;
@@ -48,7 +49,7 @@ public class CoordoffsetCommand {
 
         source.sendSuccess(() -> Component.literal(pos.toShortString() + " is now in the 0,0 chunk for you. Entities may take a while to show their correct position."), false);
 
-        ((IServerPlayerEntityMixin)player).hidecoords$setShouldOffset(true);
+        player.hidecoords$setShouldOffset(true);
 
         if (newOffset.equals(((HasCoordOffset) player.connection).hidecoords$getCoordOffset())) return 0;
 

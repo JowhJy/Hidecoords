@@ -375,9 +375,10 @@ public class S2CPacketOffsetter {
         BundleContents comp;
         if ((comp = itemStack.get(DataComponents.BUNDLE_CONTENTS)) != null)
         {
-            BundleContents.Mutable newBundleComp = new BundleContents.Mutable(BundleContents.EMPTY);
-            comp.itemCopyStream().forEach(innerStack -> newBundleComp.tryInsert(offset(innerStack, offset)));
-            result.set(DataComponents.BUNDLE_CONTENTS, newBundleComp.toImmutable());
+            var newItems = new ArrayList<ItemStack>();
+            comp.items().forEach(innerStack -> newItems.add(offset(innerStack, offset)));
+            BundleContents newBundleComp = new BundleContents(newItems);
+            result.set(DataComponents.BUNDLE_CONTENTS, newBundleComp);
         }
 
         if (itemStack.is(Items.COMPASS)) {
