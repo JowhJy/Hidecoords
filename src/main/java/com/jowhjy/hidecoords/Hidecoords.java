@@ -66,10 +66,10 @@ public class Hidecoords implements ModInitializer {
         player.initInventoryMenu();
         player.setHealth(player.getHealth());
 
-        player.connection.send(new ClientboundSetChunkCacheCenterPacket(player.chunkPosition().x, player.chunkPosition().z));
+        player.connection.send(new ClientboundSetChunkCacheCenterPacket(player.chunkPosition().x(), player.chunkPosition().z()));
 
         player.getChunkTrackingView().forEach((chunkPos) -> {
-            var chunk = world.getChunk(chunkPos.x, chunkPos.z);
+            var chunk = world.getChunk(chunkPos.x(), chunkPos.z());
             player.connection.chunkSender.dropChunk(player, chunk.getPos());
             player.connection.chunkSender.markChunkPendingToSend(chunk);
         });

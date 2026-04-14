@@ -35,8 +35,8 @@ public class LightUpdateS2CPacketMixin implements HasAccessibleChunkPos {
     @Inject(method = "<init>(Lnet/minecraft/world/level/ChunkPos;Lnet/minecraft/world/level/lighting/LevelLightEngine;Ljava/util/BitSet;Ljava/util/BitSet;)V", at = @At("TAIL"))
     public void hidecoords$modifyConstructor(ChunkPos chunkPos, LevelLightEngine lightProvider, BitSet skyBits, BitSet blockBits, CallbackInfo ci)
     {
-        hidecoords$accessibleChunkX = chunkPos.x;
-        hidecoords$accessibleChunkZ = chunkPos.z;
+        hidecoords$accessibleChunkX = chunkPos.x();
+        hidecoords$accessibleChunkZ = chunkPos.z();
     }
 
     @ModifyArg(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;writeVarInt(I)Lnet/minecraft/network/FriendlyByteBuf;", ordinal = 0))

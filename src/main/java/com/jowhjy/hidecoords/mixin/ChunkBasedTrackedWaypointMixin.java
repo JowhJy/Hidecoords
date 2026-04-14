@@ -18,6 +18,6 @@ public abstract class ChunkBasedTrackedWaypointMixin extends TrackedWaypoint imp
 
     @Override
     public OffsetableTrackedWaypoint hidecoords$offset(Offset offset) {
-        return (OffsetableTrackedWaypoint)TrackedWaypoint.setChunk(identifier.left().get(), this.icon(), new ChunkPos(this.chunkPos.x + offset.getChunkX(), this.chunkPos.z + offset.getChunkZ()));
+        return (OffsetableTrackedWaypoint)TrackedWaypoint.setChunk(identifier.left().get(), this.icon(), new ChunkPos(this.chunkPos.x() + offset.getChunkX(), this.chunkPos.z() + offset.getChunkZ()));
     }
 }

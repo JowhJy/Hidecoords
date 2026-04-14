@@ -11,7 +11,7 @@ public class Offset {
     public Offset(BlockPos blockPos)
     {
         this.blockPos = blockPos;
-        this.chunkPos = new ChunkPos(blockPos);
+        this.chunkPos = ChunkPos.containing(blockPos);
     }
 
     public int getX()
@@ -26,12 +26,12 @@ public class Offset {
 
     public int getChunkX()
     {
-        return chunkPos.x;
+        return chunkPos.x();
     }
 
     public int getChunkZ()
     {
-        return chunkPos.z;
+        return chunkPos.z();
     }
 
     public BlockPos getBlockPos()

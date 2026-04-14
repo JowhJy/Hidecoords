@@ -62,6 +62,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.LodestoneTracker;
@@ -182,8 +183,8 @@ public class S2CPacketOffsetter {
             ChunkPos chunkPos = new ChunkPos(typedPacket.getX(), typedPacket.getZ());
             ChunkPos newChunkPos = offset(chunkPos, offset);
 
-            ((HasAccessibleChunkPos)typedPacket).hidecoords$setChunkX(newChunkPos.x);
-            ((HasAccessibleChunkPos)typedPacket).hidecoords$setChunkZ(newChunkPos.z);
+            ((HasAccessibleChunkPos)typedPacket).hidecoords$setChunkX(newChunkPos.x());
+            ((HasAccessibleChunkPos)typedPacket).hidecoords$setChunkZ(newChunkPos.z());
 
             return typedPacket;
         }
@@ -223,15 +224,15 @@ public class S2CPacketOffsetter {
         if (packetType.equals(GamePacketTypes.CLIENTBOUND_LIGHT_UPDATE)) {
             ClientboundLightUpdatePacket typedPacket = (ClientboundLightUpdatePacket) packet;
             ChunkPos newChunkPos = offset(new ChunkPos(typedPacket.getX(), typedPacket.getZ()),offset);
-            ((HasAccessibleChunkPos)typedPacket).hidecoords$setChunkX(newChunkPos.x);
-            ((HasAccessibleChunkPos)typedPacket).hidecoords$setChunkZ(newChunkPos.z);
+            ((HasAccessibleChunkPos)typedPacket).hidecoords$setChunkX(newChunkPos.x());
+            ((HasAccessibleChunkPos)typedPacket).hidecoords$setChunkZ(newChunkPos.z());
             return typedPacket;
         }
         if (packetType.equals(GamePacketTypes.CLIENTBOUND_SET_CHUNK_CACHE_CENTER)) {
             ClientboundSetChunkCacheCenterPacket typedPacket = (ClientboundSetChunkCacheCenterPacket) packet;
             ChunkPos oldPos = new ChunkPos(typedPacket.getX(), typedPacket.getZ());
             ChunkPos newPos = offset(oldPos,offset);
-            return new ClientboundSetChunkCacheCenterPacket(newPos.x,newPos.z);
+            return new ClientboundSetChunkCacheCenterPacket(newPos.x(), newPos.z());
         }
         if (packetType.equals(GamePacketTypes.CLIENTBOUND_ENTITY_POSITION_SYNC)) {
             ClientboundEntityPositionSyncPacket typedPacket = (ClientboundEntityPositionSyncPacket) packet;
@@ -364,7 +365,7 @@ public class S2CPacketOffsetter {
     }
     public static ChunkPos offset(ChunkPos chunkPos, Offset offset)
     {
-        return new ChunkPos(chunkPos.x + offset.getChunkX(), chunkPos.z + offset.getChunkZ());
+        return new ChunkPos(chunkPos.x() + offset.getChunkX(), chunkPos.z() + offset.getChunkZ());
     }
 
     public static ItemStack offset(ItemStack itemStack, Offset offset) {
@@ -375,20 +376,22 @@ public class S2CPacketOffsetter {
         BundleContents comp;
         if ((comp = itemStack.get(DataComponents.BUNDLE_CONTENTS)) != null)
         {
-            var newItems = new ArrayList<ItemStack>();
-            comp.items().forEach(innerStack -> newItems.add(offset(innerStack, offset)));
+            var newItems = new ArrayList<ItemStackTemplate>();
+            comp.items().forEach(innerStack -> newItems.add(ItemStackTemplate.fromNonEmptyStack(offset(innerStack.create(), offset))));
             BundleContents newBundleComp = new BundleContents(newItems);
             result.set(DataComponents.BUNDLE_CONTENTS, newBundleComp);
         }
 
         if (itemStack.is(Items.COMPASS)) {
             itemStack.getComponents().forEach(componentMapEntry -> {
-                if (!(componentMapEntry.value() instanceof LodestoneTracker lodestoneComponent)) return;
+                if (!(componentMapEntry.value() instanceof LodestoneTracker(
+                        Optional<GlobalPos> target, boolean tracked
+                ))) return;
 
                 DataComponentType<LodestoneTracker> test = (DataComponentType<LodestoneTracker>) componentMapEntry.type();
 
-                if (lodestoneComponent.target().isEmpty()) return;
-                LodestoneTracker newLodestoneComponent = new LodestoneTracker(Optional.of(offset(lodestoneComponent.target().get(), offset)), lodestoneComponent.tracked());
+                if (target.isEmpty()) return;
+                LodestoneTracker newLodestoneComponent = new LodestoneTracker(Optional.of(offset(target.get(), offset)), tracked);
                 result.set(test, newLodestoneComponent);
             });
         }
