@@ -16,7 +16,7 @@
     "PositionalTrackedWaypointMixin",
     "ServerChunkLoadingManagerAccessor",
     "ServerPlayerEntityMixin",
-    "ServerPlayNetworkHandlerMixin",
+    "ServerPlayPacketListenerImplMixin",
     "ServerWaypointHandlerInvoker",
     "ServerWorldAccessor",
     "TrackedWaypointMixin",

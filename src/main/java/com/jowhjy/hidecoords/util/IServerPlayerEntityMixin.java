@@ -7,7 +7,7 @@ public interface IServerPlayerEntityMixin {
     @Unique
     default boolean hidecoords$shouldOffset()
     {
-        return false;
+        return true;
     }
 
     @Unique

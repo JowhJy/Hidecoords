@@ -3,6 +3,7 @@ package com.jowhjy.hidecoords.mixin;
 import com.jowhjy.hidecoords.Hidecoords;
 import com.jowhjy.hidecoords.Offset;
 import com.jowhjy.hidecoords.util.HasCoordOffset;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,17 +18,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerGamePacketListenerImpl.class)
-public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonPacketListenerImpl implements HasCoordOffset {
+public abstract class ServerPlayPacketListenerImplMixin extends ServerCommonPacketListenerImpl implements HasCoordOffset {
 
     @Shadow public abstract ServerPlayer getPlayer();
 
-    @Shadow private double firstGoodX;
     @Unique
     Offset hidecoords$coordOffset;
 
-    public ServerPlayNetworkHandlerMixin(MinecraftServer server, Connection connection, CommonListenerCookie clientData, double lastTickX) {
+    public ServerPlayPacketListenerImplMixin(MinecraftServer server, Connection connection, CommonListenerCookie clientData) {
         super(server, connection, clientData);
-        this.firstGoodX = lastTickX;
     }
 
     @Unique
@@ -41,15 +40,20 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonPacketLi
     public void hidecoords$setCoordOffset(Offset coordOffset, boolean resendData)
     {
         hidecoords$coordOffset = coordOffset;
-        if (resendData) Hidecoords.resendDataAfterOffsetChange(this.getPlayer());
+        if (resendData && this.getPlayer().hidecoords$shouldOffset()) Hidecoords.resendDataAfterOffsetChange(this.getPlayer());
+    }
+
+    @Override
+    public void hidecoords$pickNewOffset(boolean resendData, BlockPos position) {
+        hidecoords$setCoordOffset(Offset.zeroAtLocation(position), resendData);
     }
 
     /** Inject into the constructor to make the offsetPacket
      */
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void hidecoords$createOffset(MinecraftServer server, Connection connection, ServerPlayer player, CommonListenerCookie clientData, CallbackInfo ci){
+    public void hidecoords$createOffsetOnPacketListenerInit(MinecraftServer server, Connection connection, ServerPlayer player, CommonListenerCookie clientData, CallbackInfo ci){
 
-        hidecoords$coordOffset = Offset.zeroAtLocation(player.blockPosition());
+        hidecoords$pickNewOffset(false, player.blockPosition());
 
     }
 

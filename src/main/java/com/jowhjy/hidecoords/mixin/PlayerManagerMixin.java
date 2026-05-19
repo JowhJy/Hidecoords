@@ -16,14 +16,11 @@ public class PlayerManagerMixin {
 
     /**
      * Reroll the coordinate offset on respawn
-     * @param instance
-     * @param oldPlayer
-     * @param alive
      */
     @Redirect(method = "respawn", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;restoreFrom(Lnet/minecraft/server/level/ServerPlayer;Z)V"))
-    public void hidecoords$newOffsetOnRespawn(ServerPlayer instance, ServerPlayer oldPlayer, boolean alive, @Local TeleportTransition teleportTarget)
+    public void hidecoords$newOffsetOnRespawn(ServerPlayer instance, ServerPlayer oldPlayer, boolean restoreAll, @Local(name = "respawnInfo") TeleportTransition respawnInfo)
     {
-        ((HasCoordOffset)(instance.connection)).hidecoords$setCoordOffset(Offset.zeroAtLocation(BlockPos.containing(teleportTarget.position())), true);
-        instance.restoreFrom(oldPlayer, alive);
+        ((HasCoordOffset)(instance.connection)).hidecoords$pickNewOffset(true, BlockPos.containing(respawnInfo.position()));
+        instance.restoreFrom(oldPlayer, restoreAll);
     }
 }
