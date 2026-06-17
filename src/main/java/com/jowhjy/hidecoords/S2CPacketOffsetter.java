@@ -295,7 +295,7 @@ public class S2CPacketOffsetter {
             Optional<GlobalPos> oldLastDeathLocation = oldCommonPlayerSpawnInfo.lastDeathLocation();
             Optional<GlobalPos> newLastDeathLocation = oldLastDeathLocation.map(pos -> offset(pos,offset));
             CommonPlayerSpawnInfo newCommonPlayerSpawnInfo = new CommonPlayerSpawnInfo(oldCommonPlayerSpawnInfo.dimensionType(), oldCommonPlayerSpawnInfo.dimension(), oldCommonPlayerSpawnInfo.seed(), oldCommonPlayerSpawnInfo.gameType(), oldCommonPlayerSpawnInfo.previousGameType(), oldCommonPlayerSpawnInfo.isDebug(), oldCommonPlayerSpawnInfo.isFlat(), newLastDeathLocation, oldCommonPlayerSpawnInfo.portalCooldown(), oldCommonPlayerSpawnInfo.seaLevel());
-            return new ClientboundLoginPacket(typedPacket.playerId(), typedPacket.hardcore(), typedPacket.levels(), typedPacket.maxPlayers(), typedPacket.chunkRadius(), typedPacket.simulationDistance(), typedPacket.reducedDebugInfo(), typedPacket.showDeathScreen(), typedPacket.doLimitedCrafting(), newCommonPlayerSpawnInfo, typedPacket.enforcesSecureChat());
+            return new ClientboundLoginPacket(typedPacket.playerId(), typedPacket.hardcore(), typedPacket.levels(), typedPacket.maxPlayers(), typedPacket.chunkRadius(), typedPacket.simulationDistance(), typedPacket.reducedDebugInfo(), typedPacket.showDeathScreen(), typedPacket.doLimitedCrafting(), newCommonPlayerSpawnInfo, typedPacket.onlineMode(), typedPacket.enforcesSecureChat());
         }
         if (packetType.equals(GamePacketTypes.CLIENTBOUND_SET_PLAYER_INVENTORY)) {
             ClientboundSetPlayerInventoryPacket typedPacket = (ClientboundSetPlayerInventoryPacket) packet;
